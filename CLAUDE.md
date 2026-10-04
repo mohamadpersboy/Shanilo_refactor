@@ -22,10 +22,10 @@
 | Repository | `mohamadpersboy/Shanilo_refactor` |
 | Repository Legacy (مرجع) | `mohamadpersboy/shanilo` (کد Legacy Laravel 5.5) |
 | Branch | `main` |
-| Current Phase | Phase 0.5 کامل شد. Open Decisions Review انجام شد. Phase 1 هنوز شروع نشده. |
-| محتوای repository | فقط `CLAUDE.md` و `docs/` (`legacy/`، `scope/`). کد Legacy در این repository نیست. |
-| کد Next.js | وجود ندارد |
-| Tests / Build | برای پروژه جدید هنوز تعریف نشده‌اند |
+| Current Phase | Phase 1 (Foundation) کامل شد. Phase 2 هنوز شروع نشده. |
+| محتوای repository | `CLAUDE.md`، `docs/`، و پایه Next.js (`app/`، `src/lib/`، `tests/`). کد Legacy در این repository نیست. |
+| کد Next.js | فقط پایه: Shell، `/api/health`، لایه ENV، Errors، Logger. Feature کسب‌وکار وجود ندارد. |
+| Tests / Build | Scriptها: `lint`, `typecheck`, `test`, `build`. نسخه‌ها: Next 16.3.8، React 19.3.0، TypeScript 6.0.3، ESLint 9.39.5، Vitest 5.0.3. |
 | Open Decisions | 15 مورد. منتظر پاسخ مالک. گزارش: `docs/scope/open-decisions-review.md` |
 
 **هشدار امنیتی:** repository Legacy (`mohamadpersboy/shanilo`) در عمل public است و Credential بانک داخل آن است. جزئیات در `docs/scope/open-decisions-review.md` (OD-15). مالک باید Repository را private کند و Credential را Rotate کند.
@@ -152,6 +152,11 @@ READ → UNDERSTAND → INSPECT → PLAN → IMPLEMENT → TEST → UPDATE CLAUD
 
 ## 10. مسائل شناخته‌شده
 
+- TypeScript 7 و ESLint 10 با `eslint-config-next@16.3.8` سازگار نیستند (peer: `typescript-eslint` نیاز به TS زیر 6.1 و ESLint حداکثر 9 دارد). به همین دلیل TS 6.0.3 و ESLint 9.39.5 pin شده‌اند. بعد از سازگار شدن `eslint-config-next` دوباره بررسی کن.
+- `npm audit`: 5 هشدار high در زنجیره Dev (`braces` ← `eslint-config-next`). فقط Dev است. در Runtime تولید نیست. بعد از نسخه جدید `eslint-config-next` دوباره بررسی کن.
+- ZarinPal در ENV Phase 1 هست (دستور صریح مالک). OD-14/F45 آن را REMOVE ثبت کرده. این تعارض هنوز حل نشده. ENV فقط Config است. هیچ Provider پیاده نشده.
+- نام ENV پیامک `SMSIR_*` است. Master Prompt در مثال `SMS_IR_*` دارد. نام نهایی با تأیید مالک.
+
 - `pbmedia/laravel-ffmpeg` هنوز در `composer.json` است. اگر Legacy اجرا شود، `createVideo` و `createMusic` بدون ffmpeg کار نمی‌کنند. این توابع فعلاً استفاده نمی‌شوند.
 - Legacy روی PHP جدید اجرا نمی‌شود. برای اجرا PHP 7.0 تا 7.2 لازم است. این مورد با اجرای واقعی تأیید نشده.
 - پروژه Legacy بعد از پاک‌سازی اجرا و تست نشده است.
@@ -163,6 +168,7 @@ READ → UNDERSTAND → INSPECT → PLAN → IMPLEMENT → TEST → UPDATE CLAUD
 - [x] Phase 0: Legacy Reverse Engineering (`docs/legacy/`، 25 سند).
 - [x] Phase 0.5: Scope & Feature Decisions (`docs/scope/`، 12 سند).
 - [x] تصمیم `pbmedia/laravel-ffmpeg`: REMOVE (کد مرده). منتظر تأیید کاربر (OD-14).
+- [x] Phase 1: Foundation (Next.js، ENV، Errors، Logger، Health، README).
 - [ ] پاسخ کاربر به Open Decisions (`docs/scope/open-decisions.md`، 15 مورد).
 - [ ] Master Prompt و Operating Rules را در `docs/` نگه‌داری کن (در صورت تأیید کاربر).
 
@@ -175,4 +181,4 @@ READ → UNDERSTAND → INSPECT → PLAN → IMPLEMENT → TEST → UPDATE CLAUD
 
 ## 13. Next Phase
 
-Phase 1 — Foundation. منتظر دستور کاربر. خودکار شروع نکن.
+Phase 2 — Architecture & Domain. منتظر دستور کاربر. خودکار شروع نکن.
