@@ -22,11 +22,11 @@
 | Repository | `mohamadpersboy/Shanilo_refactor` |
 | Repository Legacy (مرجع) | `mohamadpersboy/shanilo` (کد Legacy Laravel 5.5) |
 | Branch | `main` |
-| Current Phase | Phase 1 (Foundation) کامل شد. Phase 2 هنوز شروع نشده. |
+| Current Phase | Phase 1.5 (ثبت تصمیم‌های مالی) کامل شد. Phase 2 هنوز شروع نشده. |
 | محتوای repository | `CLAUDE.md`، `docs/`، و پایه Next.js (`app/`، `src/lib/`، `tests/`). کد Legacy در این repository نیست. |
 | کد Next.js | فقط پایه: Shell، `/api/health`، لایه ENV، Errors، Logger. Feature کسب‌وکار وجود ندارد. |
 | Tests / Build | Scriptها: `lint`, `typecheck`, `test`, `build`. نسخه‌ها: Next 16.3.8، React 19.3.0، TypeScript 6.0.3، ESLint 9.39.5، Vitest 5.0.3. |
-| Open Decisions | 15 مورد. منتظر پاسخ مالک. گزارش: `docs/scope/open-decisions-review.md` |
+| Open Decisions | 15 مورد: 3 DECIDED (OD-01 B، OD-07 B، OD-11 A)، 12 باز. ZarinPal DECIDED. رکوردها: `docs/scope/open-decisions.md` بخش 0. گزارش قدیمی: `docs/scope/open-decisions-review.md` |
 
 **هشدار امنیتی:** repository Legacy (`mohamadpersboy/shanilo`) در عمل public است و Credential بانک داخل آن است. جزئیات در `docs/scope/open-decisions-review.md` (OD-15). مالک باید Repository را private کند و Credential را Rotate کند.
 
@@ -154,7 +154,7 @@ READ → UNDERSTAND → INSPECT → PLAN → IMPLEMENT → TEST → UPDATE CLAUD
 
 - TypeScript 7 و ESLint 10 با `eslint-config-next@16.3.8` سازگار نیستند (peer: `typescript-eslint` نیاز به TS زیر 6.1 و ESLint حداکثر 9 دارد). به همین دلیل TS 6.0.3 و ESLint 9.39.5 pin شده‌اند. بعد از سازگار شدن `eslint-config-next` دوباره بررسی کن.
 - `npm audit`: 5 هشدار high در زنجیره Dev (`braces` ← `eslint-config-next`). فقط Dev است. در Runtime تولید نیست. بعد از نسخه جدید `eslint-config-next` دوباره بررسی کن.
-- ZarinPal در ENV Phase 1 هست (دستور صریح مالک). OD-14/F45 آن را REMOVE ثبت کرده. این تعارض هنوز حل نشده. ENV فقط Config است. هیچ Provider پیاده نشده.
+- ZarinPal: تصمیم نهایی Mellat + ZarinPal (DR-04). F45 = REDESIGN. تعارض حل شد. ENV فقط Config است. هیچ Provider پیاده نشده.
 - نام ENV پیامک `SMSIR_*` است. Master Prompt در مثال `SMS_IR_*` دارد. نام نهایی با تأیید مالک.
 
 - `pbmedia/laravel-ffmpeg` هنوز در `composer.json` است. اگر Legacy اجرا شود، `createVideo` و `createMusic` بدون ffmpeg کار نمی‌کنند. این توابع فعلاً استفاده نمی‌شوند.
@@ -164,6 +164,9 @@ READ → UNDERSTAND → INSPECT → PLAN → IMPLEMENT → TEST → UPDATE CLAUD
 ---
 
 ## 11. TODO
+
+- [x] Phase 1.5: تصمیم‌های OD-01 (B)، OD-07 (B)، OD-11 (A)، ZarinPal ثبت و اسناد هماهنگ شد.
+- [ ] شرط شروع Phase 2: واحد Currency و نمایش داخلی Money را مالک تأیید کند. Phase 2 Readiness: READY WITH CONDITIONS.
 
 - [x] Phase 0: Legacy Reverse Engineering (`docs/legacy/`، 25 سند).
 - [x] Phase 0.5: Scope & Feature Decisions (`docs/scope/`، 12 سند).
@@ -181,4 +184,4 @@ READ → UNDERSTAND → INSPECT → PLAN → IMPLEMENT → TEST → UPDATE CLAUD
 
 ## 13. Next Phase
 
-Phase 2 — Architecture & Domain. منتظر دستور کاربر. خودکار شروع نکن.
+Phase 2 — Architecture & Domain. منتظر دستور کاربر. خودکار شروع نکن. شرایط: `docs/scope/open-decisions.md` بخش «Phase 2 Readiness Review».

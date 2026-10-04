@@ -18,11 +18,11 @@
 | Shop | MVP | سیاست تأیید: OD-05 |
 | Seller | MVP | مالک Shop. مدیریت محصول و سفارش |
 | Cart | MVP | چند فروشگاهی |
-| Checkout | MVP | آدرس، ارسال، پرداخت. مالیات: OD-07 |
+| Checkout | MVP | آدرس، ارسال، پرداخت. مالیات: TaxPolicy درصدی قابل تنظیم (OD-07 DECIDED: B). نرخ نامشخص. |
 | Order | MVP | |
 | Payment | MVP | Mellat. Callback Idempotent |
 | Wallet | MVP | دفتر کل. تسویه Post-MVP (OD-03) |
-| Credit | Unknown | OD-01 |
+| Credit | MVP | حساب و دفتر Credit مشتری برای دریافت Refund (OD-01 DECIDED: B). پرداخت، شارژ و برداشت با Credit تصمیم نشده (F47–F49). |
 | Promotion | MVP | Slider و صفحه اصلی. جایگاه پولی Post-MVP (OD-08) |
 | Social | Post-MVP | OD-04 |
 | Comment | Post-MVP | OD-09 |
@@ -44,10 +44,10 @@
 
 | وضعیت | تعداد Domain |
 |---|---|
-| MVP | 23 |
+| MVP | 24 |
 | Post-MVP | 7 |
 | Future | 0 |
-| Unknown | 5 |
+| Unknown | 4 |
 | جمع | 35 |
 
 Future صفر است چون هیچ Domain کامل فقط از «Potential New Feature» تشکیل نشده است.
@@ -78,7 +78,7 @@ Legacy فقط ثبت درخواست دارد. پرداخت و نمایش پید�
 
 ## 6. Payment
 
-- درگاه فعال: Mellat. Zarrinpal حذف. AsanPardakht UNKNOWN.
+- Providerهای تأییدشده: Mellat + ZarinPal. PaymentService ← PaymentProvider ← (MellatProvider، ZarinPalProvider). Integration Legacy ZarinPal منتقل نمی‌شود. AsanPardakht UNKNOWN.
 - Callback باید Idempotent باشد. مبلغ Callback با Order برابر است.
 - Order «در انتظار پرداخت» انقضا دارد.
 - مشکل‌های Legacy (S1، S8، S16، B14، C10) منتقل نمی‌شوند.
@@ -88,9 +88,9 @@ Legacy فقط ثبت درخواست دارد. پرداخت و نمایش پید�
 
 | موضوع | تصمیم |
 |---|---|
-| ادغام Wallet و Credit | OPEN. OD-01. |
+| Wallet و Credit | دو حساب مالی مستقل. Credit مشتری و Wallet فروشنده ادغام نمی‌شوند (OD-01 DECIDED: B). |
 | Ledger | لازم است. هر تغییر پول یک ورودی نامتغیر دارد. موجودی از دفتر می‌آید. (C9، B5) |
-| Refund | لازم است. مقصد: OD-01. بازگشت به بانک در Legacy نیست. |
+| Refund | لازم است. در MVP به Credit مشتری برمی‌گردد (OD-01 DECIDED: B). Refund بانکی در MVP لازم نیست. معماری مانع افزودن Refund Provider نشود. |
 | Settlement | لازم است. فروشنده درخواست می‌دهد. Admin تأیید یا رد می‌کند. در MVP یا بعد: OD-03. |
 | Hold period | در Legacy هست (۳ روز). مقدار نهایی: OD-03. |
 | Commission | درصد قابل تنظیم. مقدار: OD-02. |

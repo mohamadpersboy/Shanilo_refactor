@@ -64,7 +64,7 @@ graph TD
 | Product Browse | Product Published (تأیید Admin) | سخت |
 | Cancel | Order در Registered یا Confirmed | سخت |
 | Refund | Cancel، Wallet Ledger | سخت |
-| Credit | Refund یا شارژ (OD-01) | وابسته به تصمیم |
+| Credit (حساب مشتری) | Refund (OD-01 DECIDED: B) | سخت. شارژ و برداشت: تصمیم نشده (F48–F49). |
 | Settlement | Wallet Ledger، حساب بانکی، Hold period (OD-03) | سخت |
 | Comment | Product، Order (اگر فقط خریدار) | وابسته به OD-09 |
 | Messaging | Identity | سخت |

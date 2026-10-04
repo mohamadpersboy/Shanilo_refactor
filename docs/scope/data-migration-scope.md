@@ -31,7 +31,7 @@ U4: آیا Production داده واقعی دارد؟ UNKNOWN. تا OD-10 جوا�
 | CMS (مقاله، خبر، FAQ، قوانین، گالری، Newsletter) | UNKNOWN | OD-13. قوانین احتمالاً لازم است. |
 | Tag، Factor، Inventory | UNKNOWN | OD-13. |
 | `check_outs`، `user_banks` | SHOULD MIGRATE (فقط خواندنی) | MIGRATION-ONLY. |
-| `users.credit`، `credit_log`، `requests_checkout_credit` | UNKNOWN | وابسته به OD-01. |
+| `users.credit`، `credit_log`، `requests_checkout_credit` | UNKNOWN | Credit مشتری در سیستم جدید وجود دارد (OD-01 DECIDED: B). طبقه Migration به OD-10 و بررسی داده وابسته است. |
 | Activity log | OPTIONAL | |
 | Announcement (اعلان داخلی) | DO NOT MIGRATE | گذرا. |
 

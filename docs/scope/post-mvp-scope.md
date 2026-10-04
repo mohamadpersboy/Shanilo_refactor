@@ -9,7 +9,7 @@
 | Optional | Convenience. نبودن آن مانع هیچ جریان اصلی نیست. |
 | Unknown | شاهد ناکافی. تصمیم یا بررسی لازم است. |
 
-## Post-MVP (24)
+## Post-MVP (23)
 
 | ID | Domain | Feature | Decision | Basis |
 |---|---|---|---|---|
@@ -19,7 +19,6 @@
 | F22 | Product | آگاه‌سازی موجود شدن / تخفیف (NotifyList) | DEFER | EVIDENCE-BASED |
 | F23 | Search | جستجوی کاربر/فروشگاه | DEFER | EVIDENCE-BASED |
 | F34 | Shipping | ارسال پستی (`PostApi`، `post-plans`) | DEFER | OPEN |
-| F36 | Checkout | مالیات (`tax`) | DEFER | OPEN |
 | F42 | Notification | اعلان داخلی (Announcement) | KEEP | EVIDENCE-BASED |
 | F48 | Credit | شارژ Credit کاربر | DEFER | OPEN |
 | F49 | Credit | برداشت Credit کاربر (`requests_checkout_credit`) | DEFER | OPEN |

@@ -79,8 +79,8 @@
 | Allowed | Pending→Succeeded، Pending→Failed، Pending→Expired |
 | Forbidden | تغییر Succeeded و Failed. Succeeded دوم برای همان Payment. |
 | Terminal | Succeeded، Failed. Expired: UNKNOWN (آیا بانک بعد از انقضا می‌تواند موفق اعلام کند؟ U11، نیاز به بررسی قرارداد بانک). |
-| Refund | در بانک نیست (B6). برگشت وجه یک ورودی دفتر است (OD-01). |
-| Credit payment | فوری Succeeded. وابسته به OD-01. |
+| Refund | در بانک نیست (B6). Refund داخلی یک ورودی Credit مشتری است (OD-01 DECIDED: B). |
+| Credit payment | فوری Succeeded. Credit مشتری وجود دارد (OD-01 B). خود پرداخت با Credit تصمیم نشده (F47). |
 | Basis | EVIDENCE-BASED. Expired: UNKNOWN |
 
 ## 6. Wallet / Settlement
@@ -94,7 +94,7 @@
 | Added | Cancelled by requester: UNKNOWN (Legacy ندارد). |
 | Forbidden | تغییر Done/Denied. مبلغ بیش از Available. دو درخواست Pending برای یک Wallet. |
 | Terminal | Done، Denied |
-| Credit (کاربر) | RequestCheckoutCredit: pending→done/reject. وابسته به OD-01. |
+| Credit (کاربر) | RequestCheckoutCredit: pending→done/reject. Credit مشتری وجود دارد (OD-01 B). برداشت تصمیم نشده (F49). |
 | Basis | EVIDENCE-BASED. Credit: OPEN |
 
 ## 7. Shop

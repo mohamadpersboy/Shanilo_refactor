@@ -13,7 +13,7 @@
 | MIGRATION-ONLY | Feature نمی‌آید. داده تاریخی فقط خوانده یا منتقل می‌شود. |
 | UNKNOWN | شاهد برای تصمیم کافی نیست. |
 
-هر ردیف یک برچسب مبنا دارد: `EVIDENCE-BASED` (از کد Legacy)، `USER-DECISION` (کاربر صریحاً گفته)، `OPEN` (تصمیم کاربر لازم است)، `UNKNOWN` (شاهد ناکافی). این Phase هیچ `USER-DECISION` جدیدی ندارد.
+هر ردیف یک برچسب مبنا دارد: `EVIDENCE-BASED` (از کد Legacy)، `USER-DECISION` (کاربر صریحاً گفته)، `OPEN` (تصمیم کاربر لازم است)، `UNKNOWN` (شاهد ناکافی). `USER-DECISION` فقط برای 4 ردیف است که Phase 1.5 (2026-10-05) ثبت کرد: F18، F36، F39، F45. سایر ردیف‌ها تغییر نکردند.
 
 ## معیار ارزیابی
 
@@ -39,14 +39,14 @@ REMOVE فقط وقتی استفاده می‌شود که کد استفاده ن�
 | F08 | Authorization | مالک فروشگاه = فروشنده | checkIfOrderBelongsToUser | **KEEP** | فروشنده کاربری است که Shop دارد. فقط به Orderهای Shop خود دسترسی دارد. | قاعده روشن Legacy. | Shop | MVP | EVIDENCE-BASED |
 | F09 | User Profile | ویرایش پروفایل | Route profile/* (A) | **KEEP** | کاربر نام، تصویر و اطلاعات خود را ویرایش می‌کند. | — | Identity | MVP | EVIDENCE-BASED |
 | F10 | User Profile | آدرس‌های کاربر | `addresses`، Step4 Checkout (A) | **KEEP** | چند آدرس با استان و شهر. آدرس در Order Snapshot می‌شود. | Checkout به آدرس نیاز دارد. | Geography | MVP | EVIDENCE-BASED |
-| F11 | User Profile | کارت/حساب بانکی کاربر (`user_banks`) | Route profile/*، `UserBank` | **REDESIGN** | حساب مقصد برداشت وجه برای فروشنده و (در صورت تصمیم OD-01) کاربر. فقط وقتی Wallet/Credit برداشت دارد فعال می‌شود. | هدف کسب‌وکار فقط تسویه است. ثبت Legacy فقط مبنای رفتار. | Wallet | Post-MVP | OPEN |
+| F11 | User Profile | کارت/حساب بانکی کاربر (`user_banks`) | Route profile/*، `UserBank` | **REDESIGN** | حساب مقصد برداشت وجه برای فروشنده و (در صورت تصمیم درباره F49) کاربر. فقط وقتی Wallet/Credit برداشت دارد فعال می‌شود. | هدف کسب‌وکار فقط تسویه است. ثبت Legacy فقط مبنای رفتار. | Wallet | Post-MVP | OPEN |
 | F12 | User Profile | صفحه عمومی کاربر (UserPage) | Route (A: Follow/Block). جزئیات بررسی نشد | **DEFER** | — | Social. وابسته به تصمیم OD-04. | Social | Post-MVP | OPEN |
 | F13 | Catalog | دسته‌بندی سه‌سطحی | Models/Migration (A) | **KEEP** | درخت سه‌سطحی. Admin مدیریت می‌کند. | هسته مرور. | — | MVP | EVIDENCE-BASED |
 | F14 | Catalog | برند | Model Brand (A) | **KEEP** | Admin مدیریت می‌کند. محصول یک برند دارد. | — | — | MVP | EVIDENCE-BASED |
 | F15 | Product | محصول (Product) | ProductController، Migration (A) | **KEEP** | عنوان، توضیح، دسته، برند، مشخصات، تصاویر. مالک Shop. | هسته. | Shop,Catalog | MVP | EVIDENCE-BASED |
 | F16 | Product | نوع/رنگ محصول (ProductDetail) | price، discount، count، weight، color، index | **REDESIGN** | هر محصول چند Variant دارد: رنگ، قیمت، تخفیف درصدی، موجودی، وزن. یک Variant «اصلی» است. | محتوای کسب‌وکار حفظ می‌شود.  موجودی منفی ممنوع. | Product | MVP | EVIDENCE-BASED |
 | F17 | Product | مشخصات و Propertyهای قابل انتخاب | ProductProperty، Cart property validation (A) | **KEEP** | مشخصات نمایشی و ویژگی‌های انتخابی (مثل سایز) در Cart ثبت می‌شود. | — | Product | MVP | EVIDENCE-BASED |
-| F18 | Product | قاعده قیمت نهایی و گردکردن | C5: دو الگوریتم. ProductDetail فعال | **REDESIGN** | قیمت نهایی = قیمت - تخفیف درصدی. قاعده گردکردن (۱۰۰/۱۰۰۰ تومان): OD-11. | دو نسخه متناقض. نسخه Model فعال است. | Money convention | MVP | OPEN |
+| F18 | Product | قاعده قیمت نهایی و گردکردن | C5: دو الگوریتم. ProductDetail فعال | **REDESIGN** | قیمت نهایی = قیمت - تخفیف درصدی. قاعده گردکردن Legacy حفظ می‌شود (OD-11 DECIDED: A): قیمت < 100000 به نزدیک‌ترین 100. قیمت ≥ 100000 به نزدیک‌ترین 1000. یک قاعده در Domain، بدون الگوریتم دوم. | دو نسخه متناقض. نسخه Model فعال است. | Money convention | MVP | USER-DECISION |
 | F19 | Product | تأیید محصول توسط Admin | C1: `display` فعال. `status` بلااستفاده | **REDESIGN** | محصول جدید «در انتظار تأیید» است. فقط Admin آن را منتشر می‌کند. یک مدل وضعیت واحد. | Legacy فعال (`display=0`). ستون `status` حذف می‌شود. | Admin | MVP | EVIDENCE-BASED |
 | F20 | Product | آرشیو و فیلتر محصول | ProductController@index (A) | **KEEP** | لیست با فیلتر دسته، برند، قیمت. صفحه‌بندی. | هسته مرور. جزئیات `filterBy*` در U7 نامعلوم است. | Catalog | MVP | EVIDENCE-BASED |
 | F21 | Product | شمارنده بازدید و محصول پربازدید | Cookie ۱۵ دقیقه‌ای | **DEFER** | — | ارزش پایین برای MVP. | Product | Optional | EVIDENCE-BASED |
@@ -64,20 +64,20 @@ REMOVE فقط وقتی استفاده می‌شود که کد استفاده ن�
 | F33 | Shipping | ارسال توسط فروشگاه (SendType 1) | Order.php:143، CartDetail.php:84 | **REDESIGN** | هزینه از شهر مقصد فروشگاه. بدون عدد ثابت ۱ در کد. | شناسه عددی ثابت مشکل است. رفتار حفظ می‌شود. | Shop,Geography | MVP | EVIDENCE-BASED |
 | F34 | Shipping | ارسال پستی (`PostApi`، `post-plans`) | C: `dd(config())` در `PostApi::price` (B11) | **DEFER** | — | کد قابل اجرا نیست. نیاز کسب‌وکار در OD-06. | Shipping | Post-MVP | OPEN |
 | F35 | Shipping | پرداخت در محل (`pay_types.type=home`) | U12: کلاس پیدا نشد | **UNKNOWN** | — | شاهد ناکافی. OD-12. | Payment | Unknown | UNKNOWN |
-| F36 | Checkout | مالیات (`tax`) | TAX=0 ثابت (B8) | **DEFER** | مالیات صفر محاسبه می‌شود. نیاز قانونی در OD-07. | Legacy هیچ‌وقت مالیات نمی‌گیرد. | Money | Post-MVP | OPEN |
+| F36 | Checkout | مالیات (`tax`) | TAX=0 ثابت (B8). فقط Evidence Legacy. | **REDESIGN** | مالیات درصدی و قابل تنظیم (TaxPolicy: enabled، rate). Hard-code ممنوع. نرخ نهایی را مالک/حسابداری بعداً می‌دهد (OD-07 DECIDED: B). | Legacy مالیات نمی‌گیرد. این رفتار تصمیم Shanilo جدید نیست. | Money | MVP | USER-DECISION |
 | F37 | Order | ایجاد Order | CartDetail::transmit (A) | **REDESIGN** | Order با وضعیت «در انتظار پرداخت» ساخته می‌شود. بعد از پرداخت موفق «ثبت‌شده» می‌شود. Snapshot قیمت، آدرس، محصول. | C2/B3: «ثبت‌شده» قبل و بعد از پرداخت یکی است. | Payment | MVP | EVIDENCE-BASED |
 | F38 | Order | وضعیت Order و گذارها | state-machines.md | **REDESIGN** | ترتیب مجاز Legacy حفظ می‌شود. وضعیت جدید «در انتظار پرداخت» اضافه می‌شود. | state-machine-decisions.md | Order | MVP | EVIDENCE-BASED |
-| F39 | Order | لغو Order و برگشت وجه | Order::disconfirm (B1،B2،B5،B6) | **REDESIGN** | لغو قبل از «تماس/ارسال» مجاز. یک بار. موجودی برمی‌گردد. مبلغ به مقصد تعیین‌شده برمی‌گردد. | باگ‌های Legacy ≠ قاعده. مقصد برگشت وجه OD-01. | Payment,Wallet | MVP | OPEN |
+| F39 | Order | لغو Order و برگشت وجه | Order::disconfirm (B1،B2،B5،B6) | **REDESIGN** | لغو قبل از «تماس/ارسال» مجاز. یک بار. موجودی برمی‌گردد. Refund داخلی به Credit مشتری برمی‌گردد (OD-01 DECIDED: B). Refund بانکی در MVP لازم نیست. | باگ‌های Legacy ≠ قاعده. Credit مشتری و Wallet فروشنده دو حساب مستقل‌اند. | Payment,Wallet,Credit | MVP | USER-DECISION |
 | F40 | Order | تاریخچه و وضعیت سفارش مشتری | Profile/OrderController (A) | **KEEP** | مشتری فهرست و جزئیات سفارش و وضعیت را می‌بیند. | — | Order | MVP | EVIDENCE-BASED |
 | F41 | Notification | SMS وضعیت سفارش | Listener SendOrderStatusNotification (A، C12) | **REDESIGN** | SMS برای تأیید، ارسال، لغو. متن در Phase 13 تعیین می‌شود. | C12: دو مسیر متناقض. | SMS | MVP | EVIDENCE-BASED |
 | F42 | Notification | اعلان داخلی (Announcement) | Announcement model (A) | **KEEP** | اعلان داخل سایت برای کاربر و فروشنده. | — | Notification | Post-MVP | EVIDENCE-BASED |
-| F43 | Payment | درگاه Mellat | MellatPayment، Callback Route (A) | **KEEP** | پرداخت آنلاین ریالی با Mellat. شناسه مرجع ذخیره می‌شود. | تنها درگاه فعال. | Order | MVP | EVIDENCE-BASED |
+| F43 | Payment | درگاه Mellat | MellatPayment، Callback Route (A) | **KEEP** | پرداخت آنلاین ریالی با Mellat. شناسه مرجع ذخیره می‌شود. | تنها درگاه فعال در Legacy. Shanilo جدید: Mellat + ZarinPal (F45). | Order | MVP | EVIDENCE-BASED |
 | F44 | Payment | تأیید Callback پرداخت | S8، U11، B14 | **REDESIGN** | Callback تکراری فقط یک بار اثر دارد. مبلغ با Order مقایسه می‌شود. | امنیت و صحت مالی. | Payment | MVP | EVIDENCE-BASED |
-| F45 | Payment | Zarrinpal | پکیج هست. استفاده نشده (C) | **REMOVE** | — | کد مرده. | — | — | EVIDENCE-BASED |
+| F45 | Payment | ZarinPal | Legacy: پکیج هست. استفاده نشده (C). | **REDESIGN** | ZarinPal در Shanilo جدید وجود دارد، اما Integration Legacy منتقل نمی‌شود و Provider جدید بر اساس PaymentProvider Contract ساخته خواهد شد. | تصمیم مالک: Mellat + ZarinPal (Master Prompt §19، Operating Rules §36). کد Legacy مرجع نیست. | Payment | MVP | USER-DECISION |
 | F46 | Payment | AsanPardakht | کلاس هست. وضعیت در DB نامعلوم (U13) | **UNKNOWN** | — | نیاز به بررسی DB Production. | Payment | Unknown | UNKNOWN |
-| F47 | Payment | پرداخت با Credit | CreditPayment (A) | **REDESIGN** | پرداخت از موجودی کاربر. وجود آن وابسته به OD-01. | دو استخر پول (C9). | Wallet/Credit | Unknown | OPEN |
-| F48 | Credit | شارژ Credit کاربر | CreditController@store/verify (A، C10) | **DEFER** | — | وابسته به OD-01. | Payment | Post-MVP | OPEN |
-| F49 | Credit | برداشت Credit کاربر (`requests_checkout_credit`) | Admin CreditController (A) | **DEFER** | — | وابسته به OD-01. | Credit | Post-MVP | OPEN |
+| F47 | Payment | پرداخت با Credit | CreditPayment (A) | **REDESIGN** | پرداخت از موجودی کاربر. OD-01 تصمیم شد: Credit مشتری وجود دارد. دامنه این Feature تصمیم نشده. | دو حساب مستقل (OD-01 B). | Wallet/Credit | Unknown | OPEN |
+| F48 | Credit | شارژ Credit کاربر | CreditController@store/verify (A، C10) | **DEFER** | — | OD-01 DECIDED: B. دامنه این Feature تصمیم نشده. | Payment | Post-MVP | OPEN |
+| F49 | Credit | برداشت Credit کاربر (`requests_checkout_credit`) | Admin CreditController (A) | **DEFER** | — | OD-01 DECIDED: B. دامنه این Feature تصمیم نشده. | Credit | Post-MVP | OPEN |
 | F50 | Wallet | دفتر کل Wallet فروشگاه | Wallet، WalletTransaction (A) | **REDESIGN** | هر فروش و برگشت یک ورودی دفتر دارد. موجودی از دفتر محاسبه می‌شود. | C9: سه نمایش پول. | Order,Money | MVP | EVIDENCE-BASED |
 | F51 | Wallet | درخواست تسویه فروشنده (Checkout) | Profile/CheckoutController (A) | **REDESIGN** | فروشنده درخواست برداشت می‌دهد. Admin تأیید یا رد می‌کند. وضعیت نهایی تغییرنکردنی. | Legacy اجازه تغییر `done` را می‌دهد. | Wallet | Post-MVP | OPEN |
 | F52 | Wallet | دوره نگهداری وجه (۳ روز) | Wallet::getRemoveableAttribute | **REDESIGN** | وجه Order تا پایان دوره یا وضعیت «دریافت» قابل برداشت نیست. مقدار در OD-03. | قاعده فعال. مقدار نیاز به تأیید. | Wallet | Post-MVP | OPEN |
@@ -133,23 +133,23 @@ REMOVE فقط وقتی استفاده می‌شود که کد استفاده ن�
 |---|---|
 | Total Features | 97 |
 | KEEP | 21 |
-| REDESIGN | 33 |
-| DEFER | 18 |
-| REMOVE | 10 |
+| REDESIGN | 35 |
+| DEFER | 17 |
+| REMOVE | 9 |
 | MIGRATION-ONLY | 1 |
 | UNKNOWN | 14 |
 
 | Priority | تعداد |
 |---|---|
-| MVP | 42 |
-| Post-MVP | 24 |
+| MVP | 44 |
+| Post-MVP | 23 |
 | Optional | 4 |
 | Unknown | 16 |
-| — | 11 |
+| — | 10 |
 
 | Basis | تعداد |
 |---|---|
-| EVIDENCE-BASED | 61 |
-| OPEN | 20 |
+| EVIDENCE-BASED | 60 |
+| OPEN | 17 |
 | UNKNOWN | 16 |
-| USER-DECISION | 0 |
+| USER-DECISION | 4 |

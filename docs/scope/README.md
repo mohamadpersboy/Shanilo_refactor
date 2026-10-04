@@ -16,11 +16,11 @@
 | `data-migration-scope.md` | طبقه‌بندی داده Migration |
 | `security-decisions.md` | تصمیم‌های امنیتی |
 | `legacy-review.md` | بازبینی 16 Contradiction و 38 Unknown |
-| `open-decisions.md` | تصمیم‌های لازم از کاربر، خطاهای مستندات Phase 0، Feature جدید احتمالی |
+| `open-decisions.md` | تصمیم‌های نهایی Phase 1.5 (Decision Records)، تصمیم‌های باز، خطاهای مستندات Phase 0، Feature جدید احتمالی، آمادگی Phase 2 |
 
 ## برچسب مبنا
 
-`EVIDENCE-BASED` از کد Legacy. `USER-DECISION` تصمیم صریح کاربر (در این Phase صفر). `OPEN` نیاز به تصمیم کاربر. `UNKNOWN` شاهد ناکافی.
+`EVIDENCE-BASED` از کد Legacy. `USER-DECISION` تصمیم صریح کاربر (4 ردیف: F18، F36، F39، F45 — Phase 1.5). `OPEN` نیاز به تصمیم کاربر. `UNKNOWN` شاهد ناکافی.
 
 ## Final Scope Summary
 
@@ -28,23 +28,23 @@
 |---|---|
 | Total Features | 97 |
 | KEEP | 21 |
-| REDESIGN | 33 |
-| DEFER | 18 |
-| REMOVE | 10 |
+| REDESIGN | 35 |
+| DEFER | 17 |
+| REMOVE | 9 |
 | MIGRATION-ONLY | 1 |
 | UNKNOWN | 14 |
-| Featureهای MVP | 42 |
-| Featureهای Post-MVP | 24 |
+| Featureهای MVP | 44 |
+| Featureهای Post-MVP | 23 |
 | Featureهای Optional | 4 |
 | Featureهای با اولویت Unknown | 16 |
-| Domain در MVP | 23 |
+| Domain در MVP | 24 |
 | Domain در Post-MVP | 7 |
 | Domain در Future | 0 |
-| Domain در Unknown | 5 |
-| Open Decisions (نیاز به کاربر) | 15 |
+| Domain در Unknown | 4 |
+| Open Decisions (کل 15) | 12 باز، 3 DECIDED (OD-01، OD-07، OD-11) |
 | Migration Decisions (ردیف طبقه‌بندی گروه + داده مشخص) | 22 + 18 |
 | Critical Security Decisions | 8 (از 29) |
 | Business Rules | 45 |
 | Legacy Bug ≠ Rule | 21 |
-| Contradictions | 16: 5 evidence، 6 business، 5 open |
+| Contradictions | 16: 5 evidence، 8 business، 3 open |
 | Unknowns | 38: 10 resolved، 6 still unknown، 10 not relevant، 7 user decision، 5 production investigation |

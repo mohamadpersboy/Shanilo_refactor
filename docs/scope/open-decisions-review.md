@@ -15,6 +15,8 @@
 
 **هشدار فوری:** Repository Legacy در عمل public است. `CLAUDE.md` قبلی می‌گفت `private`. Clone بدون Credential موفق شد. فایل `config/mellat.php` با Credential بانک از اولین commit داخل آن است.
 
+> **به‌روزرسانی Phase 1.5 (2026-10-05):** این گزارش تاریخی است. OD-01 (B)، OD-07 (B)، OD-11 (A) و ZarinPal (Mellat + ZarinPal) تصمیم شدند. رکوردها در `open-decisions.md` بخش 0 هستند. توصیه «F45 REMOVE» و «OD-12: فقط Mellat» در این گزارش منسوخ است. F45 اکنون REDESIGN است. فهرست OD-14 اکنون 9 مورد دارد.
+
 ## Executive Summary
 
 1. هیچ Blocker فنی برای Phase 1 نیست. دو کار فوری امنیتی مستقل از Phase هست: OD-15 و F97 (`getProductByKey`).
@@ -251,7 +253,7 @@ MVP قبلاً فقط ارسال فروشگاه دارد (F33). ID عددی 1 ن
 پرداخت در محل در کد پیاده نشده است. وجود ردیف در DB معلوم نیست. AsanPardakht کلاس دارد. فعال بودن آن در DB معلوم نیست.
 
 ### Recommendation
-گزینه 1. فقط Mellat (F43).
+گزینه 1. فقط Mellat (F43). **منسوخ (Phase 1.5):** Mellat + ZarinPal تأیید شد. COD و Providerهای قدیمی باز مانده‌اند.
 
 ### Status
 `DECIDE BEFORE PHASE 12`
@@ -273,7 +275,7 @@ MVP قبلاً فقط ارسال فروشگاه دارد (F33). ID عددی 1 ن
 
 | Feature | Evidence | Dead code؟ | Recommendation |
 |---|---|---|---|
-| F45 Zarrinpal | فقط در `composer.json` | بله | REMOVE تأیید می‌شود |
+| F45 ZarinPal | فقط در `composer.json` (Legacy) | کد Legacy بله | **منسوخ.** Phase 1.5: REDESIGN. ZarinPal در Shanilo جدید وجود دارد (Master Prompt §19). |
 | F61 `follows` | `Base/Follow` بدون استفاده. فقط Migration. | بله | REMOVE. با `followers` اشتباه نشود. |
 | F68 Musonza Chat | `Admin/Base/ChatController` (148 خط)، Route، لینک sidebar، View، Provider در `config/app.php` | نه | PRODUCTION EVIDENCE REQUIRED. در OD-04 تصمیم بگیرید. |
 | F82 Calendar/Week/Member/Education | Route، Controller و sidebar دارند. ارتباط با Marketplace ندارند. | فنی نه | REMOVE از Scope جدید با تأیید مالک. جدول‌ها را در DB بررسی کنید. |
@@ -347,20 +349,20 @@ OD-04, OD-08, OD-09, OD-13 ──── Phase 13
 
 | Decision | Recommendation | Status | Blocking Phase |
 |---|---|---|---|
-| OD-01 | گزینه 2 + F47 در MVP | DECIDE BEFORE PHASE 2 | Phase 2 |
+| OD-01 | گزینه 2 + F47 در MVP | **DECIDED: B (Phase 1.5).** F47 تصمیم نشده. | — |
 | OD-02 | درصد قابل تنظیم. مقدار با مالک. | DECIDE BEFORE PHASE 12 | Phase 12 |
 | OD-03 | گزینه 1 | DECIDE BEFORE PHASE 12 | Phase 12 |
 | OD-04 | گزینه 3 | DECIDE BEFORE PHASE 13 | Phase 13 |
 | OD-05 | گزینه 2 | DECIDE BEFORE PHASE 8 | Phase 8 |
 | OD-06 | گزینه 1 | CAN DEFER | Phase 11 |
-| OD-07 | سؤال از حسابدار | DECIDE BEFORE PHASE 2 | Phase 2 |
+| OD-07 | سؤال از حسابدار | **DECIDED: B (Phase 1.5).** نرخ نامشخص. | — |
 | OD-08 | گزینه 3 | DECIDE BEFORE PHASE 13 | Phase 13 |
 | OD-09 | گزینه 2 | DECIDE BEFORE PHASE 13 | Phase 13 |
 | OD-10 | بپرسید: DB هست؟ | PRODUCTION EVIDENCE REQUIRED | Phase 3 |
-| OD-11 | گزینه 1 | DECIDE BEFORE PHASE 2 | Phase 2 |
-| OD-12 | گزینه 1 | DECIDE BEFORE PHASE 12 | Phase 12 |
+| OD-11 | گزینه 1 | **DECIDED: A (Phase 1.5).** | — |
+| OD-12 | منسوخ. فقط COD/Provider قدیمی باز است. | DECIDE BEFORE PHASE 12 | Phase 12 |
 | OD-13 | گزینه 2 | PRODUCTION EVIDENCE REQUIRED | Phase 13 |
-| OD-14 | 7 مورد تأیید. F68/F82/F93 نگه‌داشته. | DECIDE NOW | Phase 1 (طبق سند) |
+| OD-14 | 6 مورد تأیید (F45 خارج شد). F68/F82/F93 نگه‌داشته. | DECIDE (قبل از حذف هر مورد) | — |
 | OD-15 | Rotate + private کردن | DECIDE NOW | قبل از Production |
 
 ## Questions For User
@@ -376,7 +378,7 @@ OD-04, OD-08, OD-09, OD-13 ──── Phase 13
 6) OD-11: A / B / C       (A: قاعده فعال Legacy. B: بدون گردکردن. C: قاعده Trait)
 7) OD-10: A / B / C       (A: DB و فایل‌ها هست. B: داده‌ای نیست. C: بعداً)
 8) OD-05: A / B / C       (A: فروشگاه با تأیید Admin. B: فروشگاه فوری + ویرایش مهم با تأیید مجدد. C: مثل Legacy)
-9) OD-14: 7 مورد (F45، F61، F89، F94، F95، F96، F97) تأیید / نه. F68، F82، F93 فعلاً نگه‌داشته شود: بله / نه
+9) OD-14: 6 مورد (F61، F89، F94، F95، F96، F97) تأیید / نه. (F45 خارج شد: Phase 1.5) F68، F82، F93 فعلاً نگه‌داشته شود: بله / نه
 ```
 
 سؤال‌های بعدی (Phase 12 و 13): OD-02، OD-03، OD-12، OD-04، OD-08، OD-09، OD-13.

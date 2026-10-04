@@ -2,9 +2,87 @@
 
 فقط تصمیم‌هایی که از Legacy و Master Prompt جواب ندارند و کاربر باید بگوید. هیچ تصمیم «باز» پنهان در سندهای دیگر نیست. هر OD در `feature-decisions.md` و `business-rule-decisions.md` ارجاع شده است.
 
-## 1. Decisions Required From User (15)
+## 0. Final Decisions (Phase 1.5، 2026-10-05)
+
+مالک این 4 تصمیم را تأیید کرد. وضعیت آنها `DECIDED` است. تصمیم‌ها فقط ثبت شدند. هیچ Model، Service، Schema یا کد ساخته نشد. طراحی در Phase 2 است.
+
+| تصمیم | وضعیت |
+|---|---|
+| OD-01 Credit مشتری و Wallet فروشنده | DECIDED: Option B |
+| OD-07 مالیات | DECIDED: Option B |
+| OD-11 گردکردن قیمت | DECIDED: Option A |
+| ZarinPal (حل تعارض F45، OD-12، OD-14) | DECIDED: Mellat + ZarinPal |
+
+### DR-01 — OD-01: Customer Credit و Seller Wallet
+
+- **Decision:** Customer Credit و Seller Wallet دو حساب مالی مستقل‌اند. مشتری: Credit Account و Credit Transactions. فروشنده: Wallet Account و Wallet Transactions. Refund داخلی در MVP به Credit مشتری برمی‌گردد (Order Cancel ← Refund ← Customer Credit). Refund مستقیم بانکی در MVP لازم نیست.
+- **Option:** B
+- **Reason (بیان مالک):** پول مشتری و فروشنده نباید در یک موجودی ادغام شود. معماری نباید افزودن Refund Provider در آینده را خراب کند.
+- **Legacy Evidence:** `users.credit` (Credit مشتری). `Wallet` و `WalletTransaction` (دفتر `add`/`sub` فروشگاه). `Order::disconfirm`: `credit += order.total`. C9، BR-19.
+- **New Shanilo Impact:** F39 به Credit مشتری برمی‌گردد. Domain Credit از Unknown به MVP می‌رود (حساب و دفتر برای دریافت Refund). F47 (پرداخت با Credit)، F48 (شارژ)، F49 (برداشت) تصمیم نشده‌اند و حکم این تصمیم نیستند.
+- **Implementation Phase:** طراحی: Phase 2. Schema: Phase 3. Refund و Wallet: Phase 11 و 12.
+
+### DR-02 — OD-07: Tax
+
+- **Decision:** Shanilo جدید مالیات را درصدی و قابل تنظیم پشتیبانی می‌کند. مفهوم: `TaxPolicy` با `enabled` و `rate`. مالیات در Business Logic Hard-code نمی‌شود. نرخ فعلی تعیین نشد. مالک/حسابداری بعداً نرخ را می‌دهد.
+- **Option:** B
+- **Reason (بیان مالک):** مالیات نباید Hard-code باشد. Legacy فقط Evidence است، نه تصمیم نهایی.
+- **Legacy Evidence:** `TAX = 0` ثابت. `Order.tax`. BR-05. BR-13: مجموع Order شامل مالیات است.
+- **New Shanilo Impact:** F36 از DEFER به REDESIGN می‌رود. سازوکار در MVP (Order Total مالیات دارد). نرخ و مقدار `enabled`: تصمیم نشده.
+- **Implementation Phase:** طراحی Money: Phase 2. محاسبه Checkout: Phase 11.
+
+### DR-03 — OD-11: Price Rounding
+
+- **Decision:** الگوریتم فعال Legacy حفظ می‌شود. قیمت < 100000: گرد به نزدیک‌ترین 100. قیمت ≥ 100000: گرد به نزدیک‌ترین 1000. الگوریتم قدیمی Trait (500/1000) انتخاب نمی‌شود.
+- **Option:** A
+- **Reason (بیان مالک):** رفتار واقعی Model فعال Legacy حفظ شود. Rounding یک Domain Rule مشخص باشد. در Controller یا UI پخش نشود. در چند Helper تکرار نشود. دو الگوریتم همزمان نباشد.
+- **Legacy Evidence:** `ProductDetail::getPurePriceAttribute` ← `roundPrice` (helpers_general). Model بر `PurePriceTrait` غالب است. C5، BR-04.
+- **New Shanilo Impact:** F18، BR-04. محل Rule را Phase 2 تعیین می‌کند.
+- **Implementation Phase:** Phase 2 (محل Rule). Phase 8 (قیمت محصول). Phase 11 (Checkout).
+
+### DR-04 — ZarinPal
+
+- **Decision:** درگاه‌های Shanilo جدید: Mellat + ZarinPal. معماری: `PaymentService ← PaymentProvider ← (MellatProvider، ZarinPalProvider)`. Provider در Order Business Logic نمی‌آید. Order به یک Provider وابسته نیست. Provider فقط Integration با Gateway است. Business Rule (Order، Payment State، Amount، Refund، Idempotency) در Domain/Application می‌ماند. کد Legacy ZarinPal منتقل نمی‌شود. Integration و Contract جدید ساخته می‌شود.
+- **Option:** Mellat + ZarinPal
+- **Reason (بیان مالک):** Master Prompt §19 و Operating Rules §36 هر دو Provider را حداقل مورد نیاز می‌دانند.
+- **Legacy Evidence:** `tohidplus/zarrinpal` فقط در `composer.json`. در `app`، `routes`، `config` و `resources` هیچ استفاده‌ای نیست.
+- **New Shanilo Impact:** F45 از REMOVE به REDESIGN رفت. F43 (Mellat) KEEP می‌ماند. OD-14 یک مورد کمتر دارد (9 مورد). OD-12 فقط درباره COD و Providerهای قدیمی دیگر است.
+- **Implementation Phase:** Contract: Phase 2. Provider: Phase 12. ENV از Phase 1 در `.env.example` هست.
+
+وضعیت پرداخت: Mellat = confirmed. ZarinPal = confirmed. COD/Home = still open (OD-12). AsanPardakht = still unknown (OD-12).
+
+### Requirements برای Phase 2 (فقط ثبت، بدون Implementation)
+
+1. **Money Model حداقل مفاهیم:** `Money`، `Currency`، `RoundingPolicy`، `TaxPolicy`، `PriceCalculation`.
+2. **Order تاریخی:** Order با تغییر قیمت فعلی Product تغییر نمی‌کند. Phase 2 حداقل این مفاهیم را برای Order در نظر می‌گیرد: `unitPrice`، `discount`، `finalUnitPrice`، `quantity`، `tax`، `shipping`، `total`، `currency`.
+3. **Idempotency:** Legacy مشکل Refund دوباره، Callback تکراری، Confirm تکراری و تغییر دوباره وضعیت مالی داشت (BR Bug #2، #6). Phase 2 Idempotency عملیات مالی را طراحی می‌کند.
+4. **Transaction Boundary:** منطق مالی Legacy بین Model، Controller و Listener پخش است. Phase 2 مرز Transaction را برای این موارد تعیین می‌کند: Create Order، Confirm Payment، Cancel Order، Refund، Seller Wallet Transaction، Customer Credit Transaction، Seller Settlement.
+5. **Provider Boundary:** بالا در DR-04.
+
+### Phase 2 Readiness Review
+
+Blockerهای Money که حل شدند: جهت Wallet/Credit (OD-01)، مدل Tax (OD-07)، Rounding (OD-11)، Providerهای پرداخت (ZarinPal).
+
+باقی‌مانده:
+
+| مورد | وضعیت | Blocks Phase 2؟ |
+|---|---|---|
+| واحد Currency و نمایش داخلی Money | **DECISION REQUIRED.** Legacy: تومان Integer. Mellat: ریال (`convertToRial`). واحد Log بانک UNKNOWN (C10). | **Phase 2 Decision Blocker.** باید اولین تصمیم Phase 2 باشد. بدون آن، Money Model نهایی نمی‌شود. شروع Phase 2 را متوقف نمی‌کند. |
+| نقاط اعمال Rounding | Legacy `roundPrice` را روی قیمت قلم، مبلغ تسویه و مالیات اعمال می‌کند. قاعده فقط الگوریتم را تثبیت کرد. | در Phase 2 با تأیید مالک. Rule وابسته به واحد Currency است. |
+| مبلغ Refund و برگشت Wallet | Legacy: `credit += order.total`. Wallet: `calculateCheckoutPrice()`. این دو برابر نیستند. OD-01 فقط حساب‌ها را مشخص کرد. | قبل از مرز Transaction برای Refund. |
+| Commission (OD-02) | باز | خیر. قبل از نهایی شدن ورودی Wallet. |
+| Settlement و Hold period (OD-03) | باز | خیر. قبل از نهایی شدن Held/Available در Wallet. |
+| COD (OD-12) | باز | خیر. روش پرداخت قابل توسعه باشد. |
+| F47، F48، F49 (پرداخت، شارژ، برداشت با Credit) | تصمیم نشده | خیر. قبل از نهایی شدن انواع Credit Transaction. |
+| نرخ Tax و `enabled` | تصمیم نشده | خیر. فقط `TaxPolicy` طراحی می‌شود. |
+
+**Phase 2 Readiness: READY WITH CONDITIONS.** شرط: واحد Currency و نمایش داخلی Money در ابتدای Phase 2 با تأیید مالک مشخص شود.
+
+## 1. Decisions Required From User (15 کل: 3 DECIDED، 12 باز)
 
 ### OD-01 — مدل پول و مقصد برگشت وجه
+
+- **Status: DECIDED — Option B (Phase 1.5).** رکورد: DR-01. متن زیر Evidence و گزینه‌های اولیه است.
 
 - **Context:** Legacy دو استخر پول دارد: Wallet فروشگاه و `users.credit`. لغو سفارش وجه را به Credit کاربر می‌دهد.
 - **Evidence:** C9، B6، BR-19، BR-23.
@@ -77,6 +155,8 @@
 
 ### OD-07 — مالیات
 
+- **Status: DECIDED — Option B (Phase 1.5).** رکورد: DR-02. متن زیر Evidence و گزینه‌های اولیه است.
+
 - **Context:** `tax` همیشه 0.
 - **Evidence:** BR-05.
 - **Options:**
@@ -124,6 +204,8 @@
 
 ### OD-11 — قاعده گردکردن قیمت
 
+- **Status: DECIDED — Option A (Phase 1.5).** رکورد: DR-03. متن زیر Evidence و گزینه‌های اولیه است.
+
 - **Context:** دو الگوریتم. Model فعال: به 100 (زیر 100000) یا 1000.
 - **Evidence:** C5، BR-04.
 - **Options:**
@@ -136,12 +218,13 @@
 
 ### OD-12 — پرداخت در محل و درگاه‌های دیگر
 
+- **Scope (Phase 1.5):** Mellat و ZarinPal تأیید شده‌اند (DR-04). این OD فقط برای COD/Home و Providerهای قدیمی دیگر باز است. Mellat = confirmed. ZarinPal = confirmed. COD/Home = still open. AsanPardakht = still unknown.
 - **Context:** `home` و AsanPardakht در DB نامعلوم.
 - **Evidence:** U12، U13.
 - **Options:**
-  1. فقط Mellat.
-  2. Mellat + پرداخت در محل.
-  3. Mellat + درگاه دیگر (نام مشخص).
+  1. بدون پرداخت در محل و بدون Provider قدیمی دیگر. فقط Mellat + ZarinPal.
+  2. Mellat + ZarinPal + پرداخت در محل.
+  3. Mellat + ZarinPal + درگاه قدیمی دیگر (نام مشخص).
 - **Consequences:** گزینه 2 جریان Order و Wallet را تغییر می‌دهد.
 - **Affected domains:** Payment
 - **Needed before:** Phase 12
@@ -164,8 +247,8 @@
 - **Options:**
   1. فهرست را تأیید کن.
   2. موارد مشخص را از REMOVE به DEFER ببر.
+- **Update (Phase 1.5):** F45 از فهرست خارج شد. ZarinPal در Shanilo جدید وجود دارد (DR-04). فهرست 9 مورد دارد. وضعیت تأیید مالک برای این 9 مورد هنوز باز است. نکته: Evidence نشان می‌دهد F68 و F82 در Legacy Route و Controller فعال دارند و F93 هنوز جاهایی استفاده می‌شود (`open-decisions-review.md`). این سه مورد به تصمیم مالک نیاز دارند.
 - **Consequences:** تا تأیید، هیچ‌چیز حذف یا پیاده نمی‌شود. فهرست:
-  - F45 Zarrinpal
   - F61 جدول `follows` (بدون استفاده)
   - F68 Musonza Chat و `conversations`
   - F82 ماژول‌های بقایای Template: Calendar، Week، Member، Education
@@ -176,7 +259,7 @@
   - F96 Vue، vue-router، HTML minify
   - F97 مسیر `products/{id}/get` و `getProductByKey`
 - **Affected domains:** همه
-- **Needed before:** Phase 1
+- **Needed before:** قبل از حذف یا پیاده‌سازی هر مورد. (متن قبلی «Phase 1» گذشته است. Phase 1 به دستور صریح مالک بدون این تصمیم اجرا شد و هیچ Feature حذف یا پیاده نکرد.)
 
 ### OD-15 — Credential افشاشده
 
