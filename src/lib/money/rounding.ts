@@ -7,8 +7,16 @@ import { money, type Money } from "./money";
  * and never mutates its input. It has no I/O, no clock and no ENV access.
  */
 export interface RoundingPolicy {
+  /**
+   * Stable identifier of the rule. A FinancialSnapshot stores it, so an old
+   * order still says which rounding rule built it. Change it when the rule changes.
+   */
+  readonly version: string;
   round(amount: Money): Money;
 }
+
+/** Version of the Legacy rounding rule below. Never reuse it for a different rule. */
+export const LEGACY_ROUNDING_POLICY_VERSION = "legacy-v1";
 
 /**
  * Single source of truth for the Legacy price rounding rule (OD-11 option A,
@@ -52,6 +60,7 @@ function roundMagnitudeHalfUp(magnitude: number, step: number): number {
  * from zero. Example: -12_350 → -12_400, -99_950 → -100_000, -100_500 → -101_000.
  */
 export const legacyRoundingPolicy: RoundingPolicy = Object.freeze({
+  version: LEGACY_ROUNDING_POLICY_VERSION,
   round(amount: Money): Money {
     // Re-validate: rejects a malformed object, a float, an unsafe integer or an unknown currency.
     if (!isCurrency(amount.currency)) {

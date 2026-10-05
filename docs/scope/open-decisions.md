@@ -87,6 +87,8 @@
 
 **ترتیب اجرا:** 2A Money + Currency → 2B RoundingPolicy → 2C TaxPolicy + PriceCalculation + FinancialSnapshot Types → 2D Financial Errors + Idempotency Types → 2E PaymentProvider Contracts. بعد از هر مرحله توقف و گزارش. Business Feature جدید در 2A تا 2E اضافه نمی‌شود.
 
+**وضعیت اجرا:** 2A، 2B و 2C کامل شد. 2D و 2E منتظر تأیید. در 2C نرخ Tax (`rateBps`) تعیین نشد و OPEN ماند. Snapshot شامل `refundedAmount` نیست. Settlement و Payable در Phase 12 هستند. جزئیات: `CLAUDE.md` بخش 14.
+
 ### Requirements برای Phase 2 (فقط ثبت، بدون Implementation)
 
 1. **Money Model حداقل مفاهیم:** `Money`، `Currency`، `RoundingPolicy`، `TaxPolicy`، `PriceCalculation`.

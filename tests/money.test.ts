@@ -332,7 +332,7 @@ describe("RoundingPolicy (Phase 2B)", () => {
     });
 
     it("roundMoney accepts any RoundingPolicy", () => {
-      const identity: RoundingPolicy = { round: (m) => m };
+      const identity: RoundingPolicy = { version: "identity-test", round: (m) => m };
       const input = money(12_349);
       expect(roundMoney(input, identity)).toBe(input);
     });

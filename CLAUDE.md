@@ -22,9 +22,9 @@
 | Repository | `mohamadpersboy/Shanilo_refactor` |
 | Repository Legacy (مرجع) | `mohamadpersboy/shanilo` (کد Legacy Laravel 5.5) |
 | Branch | `main` |
-| Current Phase | Phase 2 (Owner Approval M-01..M-13 ثبت شد، `docs/scope/open-decisions.md` DR-05). 2A و 2B کامل شد. منتظر تأیید برای 2C. ترتیب: 2A→2B→2C→2D→2E با توقف بعد از هر مرحله. |
+| Current Phase | Phase 2 (Owner Approval M-01..M-13 ثبت شد، `docs/scope/open-decisions.md` DR-05). 2A، 2B و 2C کامل شد. منتظر تأیید برای 2D. ترتیب: 2A→2B→2C→2D→2E با توقف بعد از هر مرحله. |
 | محتوای repository | `CLAUDE.md`، `docs/`، و پایه Next.js (`app/`، `src/lib/`، `tests/`). کد Legacy در این repository نیست. |
-| کد Next.js | پایه: Shell، `/api/health`، لایه ENV، Errors، Logger. Phase 2A: `src/lib/money` (Money، Currency، Integer arithmetic). Phase 2B: `src/lib/money/rounding.ts` (RoundingPolicy). Feature کسب‌وکار وجود ندارد. |
+| کد Next.js | پایه: Shell، `/api/health`، لایه ENV، Errors، Logger. Phase 2A: `src/lib/money` (Money، Currency، Integer arithmetic). Phase 2B: `src/lib/money/rounding.ts` (RoundingPolicy). Phase 2C: `tax.ts`، `pricing.ts`، `snapshot.ts` (TaxPolicy، PriceCalculation، FinancialSnapshot). Feature کسب‌وکار وجود ندارد. |
 | Tests / Build | Scriptها: `lint`, `typecheck`, `test`, `build`. نسخه‌ها: Next 16.3.8، React 19.3.0، TypeScript 6.0.3، ESLint 9.39.5، Vitest 5.0.3. |
 | Open Decisions | 15 مورد: 3 DECIDED (OD-01 B، OD-07 B، OD-11 A)، 12 باز. ZarinPal DECIDED. رکوردها: `docs/scope/open-decisions.md` بخش 0. گزارش قدیمی: `docs/scope/open-decisions-review.md` |
 
@@ -170,7 +170,8 @@ READ → UNDERSTAND → INSPECT → PLAN → IMPLEMENT → TEST → UPDATE CLAUD
 - [x] Phase 2 Decision Review: M-01..M-13 توسط مالک تأیید شد. Currency = TOMAN. Phase 2 Readiness: READY.
 - [x] Documentation Alignment با Owner Approval.
 - [x] Phase 2A (`src/lib/money`: Money، Currency، Integer arithmetic، Safe-integer validation، Tests).
-- [x] Phase 2B (RoundingPolicy). Phase 2B RoundingPolicy completed. جزئیات در بخش 13. 2C تا 2E بعد از تأیید هر مرحله.
+- [x] Phase 2C (TaxPolicy، PriceCalculation، FinancialSnapshot). Phase 2C completed. جزئیات در بخش 14.
+- [x] Phase 2B (RoundingPolicy). Phase 2B RoundingPolicy completed. جزئیات در بخش 13. 2D و 2E بعد از تأیید هر مرحله.
 
 - [x] Phase 0: Legacy Reverse Engineering (`docs/legacy/`، 25 سند).
 - [x] Phase 0.5: Scope & Feature Decisions (`docs/scope/`، 12 سند).
@@ -200,14 +201,32 @@ Integer arithmetic
 ```
 
 - Step از مبلغ قبل از Rounding انتخاب می‌شود. `99,950 → 100,000` (step 100). `100,499 → 100,000` و `100,500 → 101,000` (step 1,000).
-- API: `RoundingPolicy { round(amount: Money): Money }`، `legacyRoundingPolicy`، `roundMoney(amount, policy = legacyRoundingPolicy)`.
+- API: `RoundingPolicy { readonly version: string; round(amount: Money): Money }`. نسخه Policy فعلی `legacy-v1` است (`LEGACY_ROUNDING_POLICY_VERSION`، در 2C اضافه شد). `legacyRoundingPolicy`، `roundMoney(amount, policy = legacyRoundingPolicy)`.
+- API قبلی:، `legacyRoundingPolicy`، `roundMoney(amount, policy = legacyRoundingPolicy)`.
 - فقط `%`، `+`، `-` روی Safe Integer. بدون تقسیم، بدون float، بدون `toFixed`.
 - Currency حفظ می‌شود. فقط TOMAN وجود دارد. ورودی دوباره با `money()` اعتبارسنجی می‌شود.
 - Overflow: اگر نتیجه از Safe Integer خارج شود، `MoneyError` با کد `MONEY_OVERFLOW`. Error جدید نیست.
 - مبلغ منفی (تصمیم فنی 2B، نه قاعده Legacy): Legacy فقط برای قیمت غیرمنفی استفاده می‌شد و نتیجه منفی در آن قابل اتکا نیست. Policy قرینه است: `round(-x) = -round(x)`. Step از `|amount|` انتخاب می‌شود. Tie از صفر دور می‌شود (`-12,350 → -12,400`). `Money` همچنان مقدار منفی را می‌پذیرد.
 - Legacy: `roundPrice` در `app/Helpers/helpers_general.php`، فعال از `ProductDetail::getPurePriceAttribute` (OD-11 A). `PurePriceTrait` (500/1000) فعال نیست. خروجی Policy با اجرای واقعی تابع PHP روی 0 تا 300,000 و چند مقدار بزرگ‌تر یکسان بود.
-- Phase 2B تصمیم جدیدی درباره BSON، Tax rate، Settlement rounding، Refund یا Payment نگرفت. نقاط اعمال Rounding (M-04) در 2C پیاده می‌شوند.
+- Phase 2B تصمیم جدیدی درباره BSON، Tax rate، Settlement rounding، Refund یا Payment نگرفت. نقاط اعمال Rounding (M-04) در 2C پیاده شدند.
 
-## 14. Next Phase
+## 14. TaxPolicy، PriceCalculation، FinancialSnapshot (Phase 2C)
 
-Phase 2C — TaxPolicy + PriceCalculation + FinancialSnapshot (منتظر دستور کاربر). به 2C خودکار وارد نشو. جزئیات: `docs/scope/open-decisions.md` بخش DR-05 و «Phase 2 Readiness Review». اگر Conflict جدید پیدا شد، قبل از تغییر معماری Decision Review بده.
+Phase 2C completed. فایل‌ها: `src/lib/money/tax.ts`، `pricing.ts`، `snapshot.ts`. فقط Domain Contract خالص. بدون Product، Order، Cart، Payment، Refund، Credit، Wallet، Payable، Settlement، MongoDB، BSON، API، UI، ENV.
+
+**Tax Rate هنوز OPEN است.** هیچ نرخ و هیچ مقدار پیش‌فرض `enabled` در کد نیست (OD-07 B). Caller نرخ را می‌دهد. نرخ Legacy (`TAX = 0`) فقط Evidence تاریخی است. نرخ‌هایی مثل 1000 در تست‌ها فقط داده تست هستند.
+
+- `TaxPolicy = { enabled, rateBps }`. Rate = Integer Basis Points (1000 = 10%). `taxPolicy(enabled, rateBps)` نامعتبر را reject می‌کند: `rateBps` باید integer و بین 0 تا 10000 باشد. `enabled = false` یعنی tax = 0 (rate اعتبارسنجی و نگه‌داری می‌شود).
+- Tax: `taxRaw = floor(subtotal × rateBps / 10000)` با BigInt داخلی (فقط داخل تابع). سپس `RoundingPolicy.round(taxRaw)`. همان Policy قیمت. Floor قبل از Rounding نتیجه را عوض نمی‌کند، چون Tieها integer هستند. Subtotal منفی reject می‌شود.
+- Line (M-04): `unit = floor(price × (100 − discountPercent) / 100)`، `finalUnitPrice = round(unit)`، `lineTotal = finalUnitPrice × quantity`. `discountPercent` = integer 0 تا 100 (مثل Legacy). `quantity` = integer مثبت. Overflow با `MONEY_OVERFLOW`.
+- Price: `subtotal = Σ lineTotal` (بدون Rounding مجدد). `total = subtotal + tax + shipping` (بدون Rounding مجدد). Shipping یک Money مستقل است و گرد نمی‌شود. `discount = Σ(unitPrice × quantity) − subtotal` و شامل اثر Rounding است. اگر Rounding قیمت را بالا ببرد، منفی می‌شود. این تعریف تصمیم فنی 2C است. Owner می‌تواند آن را بازبینی کند.
+- Error: فقط `MoneyError`. ورودی نامعتبر (rate، quantity، percent، مقدار منفی) با `MONEY_INVALID_AMOUNT` می‌آید. Phase 2D ممکن است آن را زیر Financial Errors دسته‌بندی کند.
+- `FinancialSnapshot` (immutable، عمیقاً frozen، فقط مقدار): `currency`، `lines[]` (`unitPrice`، `discountPercent`، `finalUnitPrice`، `quantity`، `lineTotal`)، `subtotal`، `discount`، `tax`، `shipping`، `total`، `paidAmount`، `policy` (`taxEnabled`، `taxRateBps`، `roundingPolicyVersion`، `currency`). `createFinancialSnapshot(calculation, paidAmount = 0)` کپی می‌کند و سازگاری را دوباره چک می‌کند. `paidAmount` بین 0 و `total` است.
+- `paymentAmount(snapshot) = snapshot.total` (M-06).
+- `refundedAmount` در Snapshot نیست. آن State قابل تغییر مالی است و طراحی Refund در Phaseهای بعد می‌آید. Seller Payable، Wallet و Settlement در Phase 12 هستند. Payment موفق Wallet را مستقیم افزایش نمی‌دهد.
+- Settlement Rounding (Phase 12)، Zero-price after Rounding (Phase 8) و نوع BSON (Phase 3) تصمیم گرفته نشدند.
+- Legacy: `Cart::getTaxAttribute` = `roundPrice(subPercent(total, TAX=0))`. `CartDetail::total` = Σ `pure_price × count` + tax + transport. Shipping در Legacy گرد می‌شود (`roundPrice`). در Shanilo جدید Shipping گرد نمی‌شود (M-04). این یک تغییر آگاهانه است.
+
+## 15. Next Phase
+
+Phase 2D — Financial Errors + Idempotency Types (منتظر دستور کاربر). به 2D خودکار وارد نشو. جزئیات: `docs/scope/open-decisions.md` بخش DR-05 و «Phase 2 Readiness Review». اگر Conflict جدید پیدا شد، قبل از تغییر معماری Decision Review بده.
