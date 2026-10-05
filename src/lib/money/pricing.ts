@@ -1,6 +1,6 @@
 import { isCurrency, type Currency } from "./currency";
 import { MoneyError } from "./errors";
-import { add, money, multiply, sum, type Money } from "./money";
+import { add, money, multiply, subtract, sum, type Money } from "./money";
 import { legacyRoundingPolicy, type RoundingPolicy } from "./rounding";
 import { calculateTax, type TaxPolicy } from "./tax";
 
@@ -17,6 +17,8 @@ export type PriceLineInput = Readonly<{
 export type PriceLine = Readonly<{
   unitPrice: Money;
   discountPercent: number;
+  /** Unit price after the discount and BEFORE rounding. Rounding is never part of the discount. */
+  discountedUnitPrice: Money;
   finalUnitPrice: Money;
   quantity: number;
   lineTotal: Money;
@@ -35,7 +37,11 @@ export type PriceCalculation = Readonly<{
   lines: readonly PriceLine[];
   /** Σ lineTotal. Not rounded again. */
   subtotal: Money;
-  /** Gross (Σ unitPrice × quantity) minus subtotal. It includes the effect of rounding, so it can be negative. */
+  /**
+   * The actual discount before rounding: Σ(unitPrice × quantity) − Σ(discountedUnitPrice × quantity).
+   * Rounding differences are not part of it. It is never negative.
+   * `subtotal` can differ from `gross − discount` because of rounding. That is allowed.
+   */
   discount: Money;
   tax: Money;
   /** Independent input. Never derived from the subtotal and never rounded here. */
@@ -80,11 +86,22 @@ function assertQuantity(quantity: number): number {
 }
 
 /**
+ * Unit price after the percent discount, before rounding: floor(price × (100 − percent) / 100).
+ * Legacy `subPercent` (`price − price × percent / 100`) is floored by `roundPrice` the same way.
+ * BigInt keeps `price × (100 − percent)` exact. The result is never above `price`.
+ * Single place for this rule: `calculateLine` and the snapshot consistency check both use it.
+ */
+export function discountedUnitPrice(unitPrice: Money, discountPercent: number): Money {
+  const checked = assertNonNegative(unitPrice, "Unit price");
+  const percent = assertDiscountPercent(discountPercent);
+  const discounted = (BigInt(checked.amount) * BigInt(100 - percent)) / 100n;
+  return money(Number(discounted), checked.currency);
+}
+
+/**
  * One line (M-04): discount → round the UNIT price → lineTotal = rounded unit × quantity.
  *
- * The unit price after discount is floor(price × (100 − percent) / 100). Legacy
- * `subPercent` then `roundPrice` floors the same value before rounding. BigInt keeps
- * `price × (100 − percent)` exact. The result is never above `price`, so it is a safe integer.
+ * The discount uses `discountedUnitPrice` (before rounding). Only then is the unit price rounded.
  * Zero-price after rounding is a Phase 8 decision. It is not handled here.
  */
 export function calculateLine(input: PriceLineInput, rounding: RoundingPolicy = legacyRoundingPolicy): PriceLine {
@@ -92,11 +109,11 @@ export function calculateLine(input: PriceLineInput, rounding: RoundingPolicy = 
   const discountPercent = assertDiscountPercent(input.discountPercent);
   const quantity = assertQuantity(input.quantity);
 
-  const discounted = (BigInt(unitPrice.amount) * BigInt(100 - discountPercent)) / 100n;
-  const finalUnitPrice = rounding.round(money(Number(discounted), unitPrice.currency));
+  const discounted = discountedUnitPrice(unitPrice, discountPercent);
+  const finalUnitPrice = rounding.round(discounted);
   const lineTotal = multiply(finalUnitPrice, quantity); // throws MONEY_OVERFLOW instead of a wrong value
 
-  return Object.freeze({ unitPrice, discountPercent, finalUnitPrice, quantity, lineTotal });
+  return Object.freeze({ unitPrice, discountPercent, discountedUnitPrice: discounted, finalUnitPrice, quantity, lineTotal });
 }
 
 /**
@@ -115,9 +132,10 @@ export function calculatePrice(input: PriceCalculationInput): PriceCalculation {
     lines.map((line) => line.lineTotal),
     currency,
   );
-  let gross = money(0, currency);
-  for (const line of lines) gross = add(gross, multiply(line.unitPrice, line.quantity));
-  const discount = add(gross, money(-subtotal.amount, currency));
+  const discount = sum(
+    lines.map((line) => multiply(subtract(line.unitPrice, line.discountedUnitPrice), line.quantity)),
+    currency,
+  );
 
   const tax = calculateTax(subtotal, input.taxPolicy, rounding);
   const total = add(add(subtotal, tax), shipping);

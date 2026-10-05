@@ -227,13 +227,84 @@ describe("calculatePrice", () => {
     expect(c.total.amount).toBe(336_900);
   });
 
-  it("discount is gross minus subtotal", () => {
-    const c = calculatePrice({
-      lines: [{ unitPrice: m(200_000), discountPercent: 10, quantity: 2 }],
-      shipping: m(0),
-      taxPolicy: noTax,
+  describe("discount is the actual discount before rounding", () => {
+    const one = (unitPrice: number, discountPercent: number, quantity: number) =>
+      calculatePrice({ lines: [{ unitPrice: m(unitPrice), discountPercent, quantity }], shipping: m(0), taxPolicy: noTax });
+
+    it("A. zero discount + rounding up: discount 0, final 200, subtotal 200", () => {
+      const c = one(150, 0, 1);
+      expect(c.discount.amount).toBe(0);
+      expect(c.lines[0]?.discountedUnitPrice.amount).toBe(150);
+      expect(c.lines[0]?.finalUnitPrice.amount).toBe(200);
+      expect(c.subtotal.amount).toBe(200);
     });
-    expect(c.discount.amount).toBe(40_000);
+
+    it("B. zero discount + rounding down: discount 0", () => {
+      const c = one(12_349, 0, 3);
+      expect(c.lines[0]?.finalUnitPrice.amount).toBe(12_300);
+      expect(c.discount.amount).toBe(0);
+      expect(c.subtotal.amount).toBe(36_900);
+    });
+
+    it("C. real discount: 1,000 at 10% × 2 → discount 200", () => {
+      const c = one(1_000, 10, 2);
+      expect(c.lines[0]?.discountedUnitPrice.amount).toBe(900);
+      expect(c.lines[0]?.finalUnitPrice.amount).toBe(900);
+      expect(c.discount.amount).toBe(200);
+      expect(c.subtotal.amount).toBe(1_800);
+    });
+
+    it("D. discount + rounding: 1,005 at 10% → 904.5 floors to 904 → final 900; discount uses 904", () => {
+      const c = one(1_005, 10, 1);
+      expect(c.lines[0]?.discountedUnitPrice.amount).toBe(904);
+      expect(c.lines[0]?.finalUnitPrice.amount).toBe(900);
+      expect(c.discount.amount).toBe(101); // 1_005 − 904, not 1_005 − 900
+      expect(c.subtotal.amount).toBe(900);
+    });
+
+    it("D2. discount + rounding up: 1,050 at 10% → 945 → final 900; 1,059 at 10% → 953 → final 1,000", () => {
+      expect(one(1_050, 10, 1).discount.amount).toBe(105);
+      const c = one(1_059, 10, 2);
+      expect(c.lines[0]?.discountedUnitPrice.amount).toBe(953);
+      expect(c.lines[0]?.finalUnitPrice.amount).toBe(1_000);
+      expect(c.discount.amount).toBe((1_059 - 953) * 2);
+      expect(c.subtotal.amount).toBe(2_000);
+    });
+
+    it("E. multiple lines: totalDiscount = sum of line discounts; rounding does not change it", () => {
+      const lines = [
+        { unitPrice: m(1_005), discountPercent: 10, quantity: 2 }, // (1_005 − 904) × 2 = 202
+        { unitPrice: m(150), discountPercent: 0, quantity: 4 }, // 0
+        { unitPrice: m(123_456), discountPercent: 25, quantity: 3 }, // floor(92_592) → (123_456 − 92_592) × 3
+      ];
+      const c = calculatePrice({ lines, shipping: m(5_000), taxPolicy: tax(1_000) });
+      const perLine = [202, 0, (123_456 - 92_592) * 3];
+      expect(c.discount.amount).toBe(perLine.reduce((a, b) => a + b, 0));
+      for (const [i, expected] of perLine.entries()) {
+        const solo = calculatePrice({ lines: [lines[i]!], shipping: m(0), taxPolicy: noTax });
+        expect(solo.discount.amount).toBe(expected);
+      }
+      // Shipping and tax never enter the discount.
+      expect(calculatePrice({ lines, shipping: m(0), taxPolicy: noTax }).discount.amount).toBe(c.discount.amount);
+    });
+
+    it("invariants: discount >= 0 and discount = gross − discountedAmount; subtotal may differ from gross − discount", () => {
+      let rounded = 0;
+      for (const price of [0, 1, 49, 50, 150, 999, 1_005, 12_349, 99_950, 100_500, 1_234_567]) {
+        for (const percent of [0, 1, 10, 33, 50, 100]) {
+          for (const quantity of [1, 2, 7]) {
+            const c = one(price, percent, quantity);
+            const l = c.lines[0]!;
+            const gross = price * quantity;
+            const discounted = l.discountedUnitPrice.amount * quantity;
+            expect(c.discount.amount).toBeGreaterThanOrEqual(0);
+            expect(c.discount.amount).toBe(gross - discounted);
+            if (c.subtotal.amount !== gross - c.discount.amount) rounded += 1;
+          }
+        }
+      }
+      expect(rounded).toBeGreaterThan(0); // the difference exists and is allowed
+    });
   });
 
   it("total = subtotal + tax + shipping with NO second rounding", () => {
@@ -466,6 +537,32 @@ describe("FinancialSnapshot", () => {
     expect(paymentAmount(snap)).toEqual(snap.total);
   });
 
+  it("snapshot discount is the real discount, never a rounding difference", () => {
+    const calc = calculatePrice({
+      lines: [{ unitPrice: m(150), discountPercent: 0, quantity: 1 }],
+      shipping: m(0),
+      taxPolicy: tax(0),
+    });
+    const snap = createFinancialSnapshot(calc);
+    expect(snap.discount.amount).toBe(0);
+    expect(snap.lines[0]?.finalUnitPrice.amount).toBe(200);
+    expect(snap.subtotal.amount).toBe(200);
+    const withDiscount = createFinancialSnapshot(
+      calculatePrice({ lines: [{ unitPrice: m(1_000), discountPercent: 10, quantity: 2 }], shipping: m(0), taxPolicy: tax(0) }),
+    );
+    expect(withDiscount.discount.amount).toBe(200);
+  });
+
+  it("rejects a snapshot whose discount is negative or includes rounding", () => {
+    const calc = calculatePrice({
+      lines: [{ unitPrice: m(150), discountPercent: 0, quantity: 1 }],
+      shipping: m(0),
+      taxPolicy: tax(0),
+    });
+    expect(codeOf(() => createFinancialSnapshot({ ...calc, discount: m(-50) }))).toBe("MONEY_INVALID_AMOUNT");
+    expect(codeOf(() => createFinancialSnapshot({ ...calc, discount: m(50) }))).toBe("MONEY_INVALID_AMOUNT");
+  });
+
   it("rejects an inconsistent calculation", () => {
     const { calc } = build();
     const badTotal = { ...calc, total: m(calc.total.amount + 1) };
@@ -500,8 +597,7 @@ describe("integration: Money + RoundingPolicy + TaxPolicy + PriceCalculation = F
     expect(snap.paidAmount).toEqual(snap.total);
     expect(paymentAmount(snap).amount).toBe(1_043_000);
     expect(snap.policy.roundingPolicyVersion).toBe("legacy-v1");
-    expect(snap.discount.amount).toBe(
-      500_000 * 2 + 99_950 + 1_049 * 5 - 905_000,
-    );
+    // Only the real 20% discount: (500_000 − 400_000) × 2. Rounding of the other lines is not discount.
+    expect(snap.discount.amount).toBe(200_000);
   });
 });

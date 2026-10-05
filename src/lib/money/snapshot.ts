@@ -1,6 +1,6 @@
 import { MoneyError } from "./errors";
-import { add, equals, money, multiply, sum, zero, type Money } from "./money";
-import type { PolicySnapshot, PriceCalculation, PriceLine } from "./pricing";
+import { add, equals, money, multiply, subtract, sum, zero, type Money } from "./money";
+import { discountedUnitPrice, type PolicySnapshot, type PriceCalculation, type PriceLine } from "./pricing";
 
 /** One line of the historical order. Value-based and frozen. */
 export type LineFinancialSnapshot = Readonly<{
@@ -12,6 +12,9 @@ export type LineFinancialSnapshot = Readonly<{
 }>;
 
 /**
+ * `discount` is the actual discount before rounding. Rounding differences are not
+ * represented as discount. `subtotal` may differ from `gross − discount` because of rounding.
+ *
  * Immutable financial record of an order at creation time. It holds values only:
  * no reference to a Product or to a live policy object. It can be rebuilt from itself.
  *
@@ -79,6 +82,16 @@ export function createFinancialSnapshot(
   if (!equals(subtotal, sum(lines.map((line) => line.lineTotal), calculation.currency))) {
     throw fail("Subtotal must equal the sum of line totals");
   }
+  const discount = copyMoney(calculation.discount);
+  const expectedDiscount = sum(
+    lines.map((line) =>
+      multiply(subtract(line.unitPrice, discountedUnitPrice(line.unitPrice, line.discountPercent)), line.quantity),
+    ),
+    calculation.currency,
+  );
+  if (discount.amount < 0 || !equals(discount, expectedDiscount)) {
+    throw fail("Discount must equal the actual discount before rounding and must not be negative");
+  }
   if (!equals(total, add(add(subtotal, tax), shipping))) {
     throw fail("Total must equal subtotal + tax + shipping");
   }
@@ -93,7 +106,7 @@ export function createFinancialSnapshot(
     currency: calculation.currency,
     lines: Object.freeze(lines),
     subtotal,
-    discount: copyMoney(calculation.discount),
+    discount,
     tax,
     shipping,
     total,
