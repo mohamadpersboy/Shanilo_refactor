@@ -22,9 +22,9 @@
 | Repository | `mohamadpersboy/Shanilo_refactor` |
 | Repository Legacy (مرجع) | `mohamadpersboy/shanilo` (کد Legacy Laravel 5.5) |
 | Branch | `main` |
-| Current Phase | Phase 2 (Owner Approval M-01..M-13 ثبت شد، `docs/scope/open-decisions.md` DR-05). 2A کامل شد. منتظر تأیید برای 2B. ترتیب: 2A→2B→2C→2D→2E با توقف بعد از هر مرحله. |
+| Current Phase | Phase 2 (Owner Approval M-01..M-13 ثبت شد، `docs/scope/open-decisions.md` DR-05). 2A و 2B کامل شد. منتظر تأیید برای 2C. ترتیب: 2A→2B→2C→2D→2E با توقف بعد از هر مرحله. |
 | محتوای repository | `CLAUDE.md`، `docs/`، و پایه Next.js (`app/`، `src/lib/`، `tests/`). کد Legacy در این repository نیست. |
-| کد Next.js | پایه: Shell، `/api/health`، لایه ENV، Errors، Logger. Phase 2A: `src/lib/money` (Money، Currency، Integer arithmetic). Feature کسب‌وکار وجود ندارد. |
+| کد Next.js | پایه: Shell، `/api/health`، لایه ENV، Errors، Logger. Phase 2A: `src/lib/money` (Money، Currency، Integer arithmetic). Phase 2B: `src/lib/money/rounding.ts` (RoundingPolicy). Feature کسب‌وکار وجود ندارد. |
 | Tests / Build | Scriptها: `lint`, `typecheck`, `test`, `build`. نسخه‌ها: Next 16.3.8، React 19.3.0، TypeScript 6.0.3، ESLint 9.39.5، Vitest 5.0.3. |
 | Open Decisions | 15 مورد: 3 DECIDED (OD-01 B، OD-07 B، OD-11 A)، 12 باز. ZarinPal DECIDED. رکوردها: `docs/scope/open-decisions.md` بخش 0. گزارش قدیمی: `docs/scope/open-decisions-review.md` |
 
@@ -170,7 +170,7 @@ READ → UNDERSTAND → INSPECT → PLAN → IMPLEMENT → TEST → UPDATE CLAUD
 - [x] Phase 2 Decision Review: M-01..M-13 توسط مالک تأیید شد. Currency = TOMAN. Phase 2 Readiness: READY.
 - [x] Documentation Alignment با Owner Approval.
 - [x] Phase 2A (`src/lib/money`: Money، Currency، Integer arithmetic، Safe-integer validation، Tests).
-- [ ] Phase 2B (RoundingPolicy). 2C تا 2E بعد از تأیید هر مرحله.
+- [x] Phase 2B (RoundingPolicy). Phase 2B RoundingPolicy completed. جزئیات در بخش 13. 2C تا 2E بعد از تأیید هر مرحله.
 
 - [x] Phase 0: Legacy Reverse Engineering (`docs/legacy/`، 25 سند).
 - [x] Phase 0.5: Scope & Feature Decisions (`docs/scope/`، 12 سند).
@@ -186,6 +186,28 @@ READ → UNDERSTAND → INSPECT → PLAN → IMPLEMENT → TEST → UPDATE CLAUD
 - تصمیم‌های `OPEN` و `UNKNOWN` را حدس نزن. به `open-decisions.md` رجوع کن.
 - Feature با تصمیم REMOVE تا تأیید کاربر (OD-14) حذف یا پیاده نمی‌شود.
 
-## 13. Next Phase
+## 13. RoundingPolicy (Phase 2B)
 
-Phase 2B — RoundingPolicy (منتظر دستور کاربر). به 2B خودکار وارد نشو. جزئیات: `docs/scope/open-decisions.md` بخش DR-05 و «Phase 2 Readiness Review». اگر Conflict جدید پیدا شد، قبل از تغییر معماری Decision Review بده.
+Phase 2B RoundingPolicy completed. فایل: `src/lib/money/rounding.ts`. Export از `src/lib/money`.
+
+Rule (منبع حقیقت: ثابت‌های `SMALL_AMOUNT_THRESHOLD`، `SMALL_STEP`، `LARGE_STEP`):
+
+```
+< 100,000 TOMAN  → nearest 100 TOMAN
+>= 100,000 TOMAN → nearest 1,000 TOMAN
+Half-Up
+Integer arithmetic
+```
+
+- Step از مبلغ قبل از Rounding انتخاب می‌شود. `99,950 → 100,000` (step 100). `100,499 → 100,000` و `100,500 → 101,000` (step 1,000).
+- API: `RoundingPolicy { round(amount: Money): Money }`، `legacyRoundingPolicy`، `roundMoney(amount, policy = legacyRoundingPolicy)`.
+- فقط `%`، `+`، `-` روی Safe Integer. بدون تقسیم، بدون float، بدون `toFixed`.
+- Currency حفظ می‌شود. فقط TOMAN وجود دارد. ورودی دوباره با `money()` اعتبارسنجی می‌شود.
+- Overflow: اگر نتیجه از Safe Integer خارج شود، `MoneyError` با کد `MONEY_OVERFLOW`. Error جدید نیست.
+- مبلغ منفی (تصمیم فنی 2B، نه قاعده Legacy): Legacy فقط برای قیمت غیرمنفی استفاده می‌شد و نتیجه منفی در آن قابل اتکا نیست. Policy قرینه است: `round(-x) = -round(x)`. Step از `|amount|` انتخاب می‌شود. Tie از صفر دور می‌شود (`-12,350 → -12,400`). `Money` همچنان مقدار منفی را می‌پذیرد.
+- Legacy: `roundPrice` در `app/Helpers/helpers_general.php`، فعال از `ProductDetail::getPurePriceAttribute` (OD-11 A). `PurePriceTrait` (500/1000) فعال نیست. خروجی Policy با اجرای واقعی تابع PHP روی 0 تا 300,000 و چند مقدار بزرگ‌تر یکسان بود.
+- Phase 2B تصمیم جدیدی درباره BSON، Tax rate، Settlement rounding، Refund یا Payment نگرفت. نقاط اعمال Rounding (M-04) در 2C پیاده می‌شوند.
+
+## 14. Next Phase
+
+Phase 2C — TaxPolicy + PriceCalculation + FinancialSnapshot (منتظر دستور کاربر). به 2C خودکار وارد نشو. جزئیات: `docs/scope/open-decisions.md` بخش DR-05 و «Phase 2 Readiness Review». اگر Conflict جدید پیدا شد، قبل از تغییر معماری Decision Review بده.

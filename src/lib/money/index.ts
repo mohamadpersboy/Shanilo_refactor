@@ -14,3 +14,11 @@ export {
   zero,
   type Money,
 } from "./money";
+export {
+  LARGE_STEP,
+  SMALL_AMOUNT_THRESHOLD,
+  SMALL_STEP,
+  legacyRoundingPolicy,
+  roundMoney,
+  type RoundingPolicy,
+} from "./rounding";
