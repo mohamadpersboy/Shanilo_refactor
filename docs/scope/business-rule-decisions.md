@@ -24,7 +24,7 @@ Legacy رفتار = آنچه کد می‌کند. هیچ‌کدام از موار
 | 14 | `RequestCheckoutCredit done`: بدون بررسی مجدد موجودی. | تأیید برداشت فقط وقتی موجودی کافی است. | B9. | EVIDENCE-BASED |
 | 15 | Checkout تسویه: Admin هر وضعیت را به هر وضعیت دیگر می‌برد. | `done` و `denied` نهایی‌اند. | State machine Checkout. | EVIDENCE-BASED |
 | 16 | `Wallet::removeable` نیاز به بازبینی. اثر مبلغ Credit و Cancel روی Wallet (دو استخر). | دو حساب مستقل: Credit مشتری و Wallet فروشنده (OD-01 DECIDED: B). | C9. | USER-DECISION |
-| 17 | Mellat Credit: `credit += amount/10`. واحد Log بانک تأیید نشده. | واحد پول در Phase 2 تعریف می‌شود. | C10. | UNKNOWN |
+| 17 | Mellat Credit: `credit += amount/10`. واحد Log بانک تأیید نشده. | واحد داخلی TOMAN است (M-01). تبدیل به Rial فقط در Provider Adapter. واحد Log بانک UNKNOWN است (Phase 12/15). | C10. | UNKNOWN |
 | 18 | `MellatPayment::payFirstPageSpecialSell` مبلغ ثابت 100. | قیمت پلن فقط از Plan می‌آید. | C4. قیمت صحیح در OD-08. | OPEN |
 | 19 | Admin Export کلید `denined`. | کلید وضعیت از یک تعریف مشترک می‌آید. | C11. | EVIDENCE-BASED |
 | 20 | Cart `CartAuth` به Route ناموجود. `middelware` غلط املایی. | Checkout ورود می‌خواهد. | C6، B12. | EVIDENCE-BASED |
@@ -39,8 +39,8 @@ Legacy رفتار = آنچه کد می‌کند. هیچ‌کدام از موار
 | BR-01 | محصول جدید `display=0`. Admin منتشر می‌کند. | business-rules «تأیید محصول» | Preserve | محصول جدید در انتظار تأیید است. فقط Admin منتشر می‌کند. | کنترل کیفیت Marketplace. |
 | BR-02 | Gallery جدید → تأیید مجدد. | همان | Preserve | تصویر جدید محصول تأیید مجدد می‌خواهد. | رفتار Legacy. |
 | BR-03 | ویرایش متن/قیمت `display` را تغییر نمی‌دهد. | «بررسی Controller کامل نشد» | Unknown | تصمیم: OD-05 (سیاست تأیید). | شاهد ناکافی. |
-| BR-04 | قیمت نهایی = قیمت - درصد تخفیف، سپس گرد. | ProductDetail | Change | قیمت نهایی از Money convention. قاعده گردکردن Legacy حفظ می‌شود (OD-11 DECIDED: A): < 100000 به نزدیک‌ترین 100. ≥ 100000 به نزدیک‌ترین 1000. فقط یک الگوریتم. | C5 و Float ممنوع. |
-| BR-05 | `tax` همیشه 0. | TAX=0 | Change | مالیات درصدی و قابل تنظیم (TaxPolicy: enabled، rate). Hard-code ممنوع. نرخ نامشخص (OD-07 DECIDED: B). | TAX=0 فقط Evidence Legacy است، نه تصمیم Shanilo جدید. |
+| BR-04 | قیمت نهایی = قیمت - درصد تخفیف، سپس گرد. | ProductDetail | Change | قیمت نهایی از Money convention. قاعده گردکردن Legacy حفظ می‌شود (OD-11 DECIDED: A): < 100000 به نزدیک‌ترین 100. ≥ 100000 به نزدیک‌ترین 1000. فقط یک الگوریتم. نقاط اعمال: M-04. Zero-price After Rounding: Phase 8. | C5 و Float ممنوع. |
+| BR-05 | `tax` همیشه 0. | TAX=0 | Change | مالیات درصدی و قابل تنظیم (TaxPolicy: enabled، rate). Hard-code ممنوع. نرخ نامشخص (OD-07 DECIDED: B). Rate = Integer Basis Points. `tax = roundPrice(subtotal × rateBps / 10000)` (M-05). | TAX=0 فقط Evidence Legacy است، نه تصمیم Shanilo جدید. |
 | BR-06 | Cart به ازای Shop تقسیم می‌شود. | CartDetail | Preserve | هر Shop یک Order جدا. | مدل Marketplace. |
 | BR-07 | Toggle: افزودن دوباره = حذف. | CartController@toggle | Change | افزودن و حذف دو عمل جدا. | UX و خطا. تصمیم UI. |
 | BR-08 | تعداد بین 1 و موجودی فعلی. | updateCount | Preserve | همان. | رفتار درست. |
@@ -52,16 +52,16 @@ Legacy رفتار = آنچه کد می‌کند. هیچ‌کدام از موار
 | BR-14 | `order_details.price` قیمت بدون تخفیف + `discount` جدا. | transmit | Change | Order Snapshot کامل: قیمت، تخفیف، قیمت نهایی، عنوان، Variant، آدرس. | تغییر محصول بعدی Order قدیمی را عوض نکند. |
 | BR-15 | Order قبل از پرداخت ساخته می‌شود. | transmit | Change | Order «در انتظار پرداخت» با انقضا. | C2. |
 | BR-16 | موجودی در پرداخت موفق کم می‌شود. | Order::confirm | Preserve | همان زمان. با کنترل بیش‌فروشی. | رفتار درست Legacy. |
-| BR-17 | پرداخت موفق → Wallet فروشگاه `add` با `calculateCheckoutPrice`. | Order::confirm | Preserve | هر فروش ورودی دفتر Wallet دارد. مبلغ = فروش - کمیسیون + هزینه ارسال Shop. | رفتار فعال. مقدار کمیسیون OD-02. |
+| BR-17 | پرداخت موفق → Wallet فروشگاه `add` با `calculateCheckoutPrice`. | Order::confirm | Change | پرداخت موفق Wallet را مستقیم افزایش نمی‌دهد. Seller Payable ایجاد یا فعال می‌شود. Settlement بعداً Payable را به Wallet منتقل می‌کند (M-10، DR-05). هر انتقال ورودی دفتر Wallet دارد. فرمول مبلغ Payable (کمیسیون، ارسال) و Rounding: Phase 12 (OD-02). | رفتار Legacy فقط Evidence است. کپی نشود. |
 | BR-18 | Cancel مجاز تا قبل از وضعیت 3. | canUpdateStatus | Preserve | لغو تا قبل از «تماس/ارسال». یک بار. | رفتار فعال. |
-| BR-19 | Cancel: وجه به `users.credit`. | Listener | Preserve | Cancel: Refund داخلی به Credit مشتری (OD-01 DECIDED: B). Refund بانکی در MVP لازم نیست. | Credit و Wallet حساب‌های جدا هستند. |
+| BR-19 | Cancel: وجه به `users.credit`. | Listener | Preserve | Cancel: Refund داخلی به Credit مشتری (OD-01 DECIDED: B). `refundAmount = paidAmount`، فقط لغو کامل (M-08). Seller Wallet تغییر نمی‌کند. Seller Payable باطل یا اصلاح می‌شود. Refund بانکی در MVP لازم نیست. | Credit و Wallet حساب‌های جدا هستند. |
 | BR-20 | ترتیب وضعیت: 2،3،4،5 پشت سر هم. مشتری 3 و 5. فروشنده 2،3،4. | canUpdateStatus | Preserve | همان. | رفتار فعال. |
 | BR-21 | هر Cancel `CreditLog` می‌سازد. | OrderController | Change | هر برگشت وجه یک ورودی دفتر دارد. بدون ورودی بی‌اثر. | B5. |
 | BR-22 | Mellat Verify موفق → `successful`. ناموفق → `unsuccessful` و Order لغو. | MellatPayment | Preserve | همان. | رفتار فعال. |
 | BR-23 | پرداخت Credit: موجودی ≥ مبلغ. | CreditPayment | Unknown | OD-01 DECIDED: B (Credit مشتری وجود دارد). این قاعده تصمیم نشده است (F47–F49). | |
 | BR-24 | شارژ Credit بین 10,000 و 10,000,000. | CreditController | Unknown | OD-01 DECIDED: B (Credit مشتری وجود دارد). این قاعده تصمیم نشده است (F47–F49). | |
 | BR-25 | `removeable = total - مبلغ ۳ روز اخیر با Order 1..4`. | Wallet | Unknown | OD-03. | مقدار و قاعده نیاز به تأیید. |
-| BR-26 | درخواست تسویه: ≥ 10,000 و ≤ `removeable`. یک `pending` برای هر Wallet. | Profile/CheckoutController | Preserve | همان. حداقل مبلغ قابل تأیید در OD-03. | رفتار فعال. |
+| BR-26 | درخواست برداشت (Payout؛ در Legacy: Checkout): ≥ 10,000 و ≤ `removeable`. یک `pending` برای هر Wallet. | Profile/CheckoutController | Preserve | همان. حداقل مبلغ قابل تأیید در OD-03. | رفتار فعال. |
 | BR-27 | Credit: یک درخواست برداشت فعال برای هر کاربر. | RequestCheckoutCredit | Unknown | OD-01 DECIDED: B (Credit مشتری وجود دارد). این قاعده تصمیم نشده است (F47–F49). | |
 | BR-28 | نظر: ورود لازم. مالک نظر نمی‌دهد. یک نظر برای هر شیء. | canComment | Preserve | همان. | رفتار فعال. |
 | BR-29 | نظر مستقیم `confirmed`. | CommentController | Unknown | OD-09. | C7. |

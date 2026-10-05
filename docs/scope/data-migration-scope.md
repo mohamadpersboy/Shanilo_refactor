@@ -19,7 +19,7 @@ U4: آیا Production داده واقعی دارد؟ UNKNOWN. تا OD-10 جوا�
 | محصول، Variant، مشخصات، Propertyها | MUST MIGRATE | |
 | تصاویر محصول و Shop (`files/uploads/...`) | MUST MIGRATE | فایل‌ها در Repository نیستند (U30، D). نیاز به دسترسی. |
 | سفارش، جزئیات سفارش، پرداخت | MUST MIGRATE | سابقه مالی. فقط خواندنی. |
-| تراکنش Wallet، تسویه (`checkouts`) | MUST MIGRATE | سابقه مالی. |
+| تراکنش Wallet، برداشت فروشنده Payout (جدول Legacy: `checkouts`) | MUST MIGRATE | سابقه مالی. |
 | نظر و امتیاز (`confirmed`) | SHOULD MIGRATE | UGC. |
 | Favorite، Follow (`followers`) | SHOULD MIGRATE | وابسته به OD-04. |
 | گزارش تخلف | OPTIONAL | |

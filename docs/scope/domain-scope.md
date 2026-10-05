@@ -21,7 +21,7 @@
 | Checkout | MVP | آدرس، ارسال، پرداخت. مالیات: TaxPolicy درصدی قابل تنظیم (OD-07 DECIDED: B). نرخ نامشخص. |
 | Order | MVP | |
 | Payment | MVP | Mellat. Callback Idempotent |
-| Wallet | MVP | دفتر کل. تسویه Post-MVP (OD-03) |
+| Wallet | MVP | دفتر کل Seller Wallet. Seller Payable مفهوم مستقل قبل از Wallet است. Settlement و Payout: OD-03 |
 | Credit | MVP | حساب و دفتر Credit مشتری برای دریافت Refund (OD-01 DECIDED: B). پرداخت، شارژ و برداشت با Credit تصمیم نشده (F47–F49). |
 | Promotion | MVP | Slider و صفحه اصلی. جایگاه پولی Post-MVP (OD-08) |
 | Social | Post-MVP | OD-04 |
@@ -89,9 +89,11 @@ Legacy فقط ثبت درخواست دارد. پرداخت و نمایش پید�
 | موضوع | تصمیم |
 |---|---|
 | Wallet و Credit | دو حساب مالی مستقل. Credit مشتری و Wallet فروشنده ادغام نمی‌شوند (OD-01 DECIDED: B). |
+| Seller Payable | مفهوم مستقل (M-10). Payment موفق Payable ایجاد یا فعال می‌کند، نه Wallet را مستقیم. Cancel/Refund آن را باطل یا اصلاح می‌کند. |
 | Ledger | لازم است. هر تغییر پول یک ورودی نامتغیر دارد. موجودی از دفتر می‌آید. (C9، B5) |
-| Refund | لازم است. در MVP به Credit مشتری برمی‌گردد (OD-01 DECIDED: B). Refund بانکی در MVP لازم نیست. معماری مانع افزودن Refund Provider نشود. |
-| Settlement | لازم است. فروشنده درخواست می‌دهد. Admin تأیید یا رد می‌کند. در MVP یا بعد: OD-03. |
+| Refund | لازم است. در MVP به Credit مشتری برمی‌گردد (OD-01 DECIDED: B). `refundAmount = paidAmount`، فقط لغو کامل (M-08). Seller Wallet را مستقیم تغییر نمی‌دهد. Refund بانکی در MVP لازم نیست. معماری مانع افزودن Refund Provider نشود. |
+| Settlement | انتقال Seller Payable→Wallet. Rounding: Phase 12. Idempotency بر اساس Business Operation ID. زمان اجرا در MVP یا بعد: OD-03. |
+| Payout | برداشت Wallet→Bank. فروشنده درخواست می‌دهد. Admin تأیید یا رد می‌کند (Legacy: Checkout). در MVP یا بعد: OD-03. |
 | Hold period | در Legacy هست (۳ روز). مقدار نهایی: OD-03. |
 | Commission | درصد قابل تنظیم. مقدار: OD-02. |
 

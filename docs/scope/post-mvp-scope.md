@@ -22,7 +22,7 @@
 | F42 | Notification | اعلان داخلی (Announcement) | KEEP | EVIDENCE-BASED |
 | F48 | Credit | شارژ Credit کاربر | DEFER | OPEN |
 | F49 | Credit | برداشت Credit کاربر (`requests_checkout_credit`) | DEFER | OPEN |
-| F51 | Wallet | درخواست تسویه فروشنده (Checkout) | REDESIGN | OPEN |
+| F51 | Wallet | درخواست برداشت فروشنده (Payout؛ Legacy: Checkout) | REDESIGN | OPEN |
 | F52 | Wallet | دوره نگهداری وجه (۳ روز) | REDESIGN | OPEN |
 | F55 | Promotion | جایگاه پولی صفحه اول و Plan (پیشنهاد/فروش ویژه) | DEFER | OPEN |
 | F57 | Social | نظر و امتیاز (محصول و فروشگاه) | REDESIGN | OPEN |

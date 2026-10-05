@@ -16,7 +16,7 @@
 | C6 | `CartAuth` و غلط املایی `middelware` | **Resolved by business decision** | Checkout ورود می‌خواهد. |
 | C7 | نظر `pending` در برابر `confirmed` | **Still open** | OD-09. |
 | C8 | چهار سیستم پیام | **Resolved by business decision** | یک سیستم پیام. دامنه ویژگی: OD-04. |
-| C9 | سه نمایش پول | **Resolved by business decision** | OD-01 DECIDED: B. Credit مشتری و Wallet فروشنده دو حساب مستقل. واحد پول و نقاط اعمال Rounding در Phase 2. |
+| C9 | سه نمایش پول | **Resolved by business decision** | OD-01 DECIDED: B. Credit مشتری و Wallet فروشنده دو حساب مستقل. واحد پول TOMAN (M-01) و نقاط اعمال Rounding (M-04) در Phase 2 تثبیت شد. Seller Payable مفهوم مستقل است (M-10). |
 | C10 | واحد پول Mellat (`/10`) | **Still open** | نیاز به کد پکیج/قرارداد بانک. Phase 2 (Money) و Phase 12. |
 | C11 | `denined` در Export | **Resolved by evidence** | غلط املایی. Export DEFER. کلید وضعیت مشترک. |
 | C12 | SMS: Controller غیرفعال، Listener فعال | **Resolved by evidence** | Listener فعال است. متن در Phase 13. |

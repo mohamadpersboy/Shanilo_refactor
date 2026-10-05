@@ -23,7 +23,7 @@ User → Auth → Browse → Product → Cart → Checkout → Payment → Order
 
 ## 2. Featureهای پشتیبان MVP
 
-Authorization، Admin (تأیید محصول، دسته، برند، Slider)، Shop (ساخت و مدیریت)، Geography، Shipping، Media (تصویر)، SMS (OTP و وضعیت سفارش)، Wallet (دفتر)، Credit مشتری (حساب و دفتر برای Refund)، SEO، Scheduler پاکسازی، Admin روش‌های پرداخت/ارسال.
+Authorization، Admin (تأیید محصول، دسته، برند، Slider)، Shop (ساخت و مدیریت)، Geography، Shipping، Media (تصویر)، SMS (OTP و وضعیت سفارش)، Seller Payable (مفهوم؛ زمان Settlement: OD-03)، Wallet (دفتر)، Credit مشتری (حساب و دفتر برای Refund)، SEO، Scheduler پاکسازی، Admin روش‌های پرداخت/ارسال.
 
 ID: F07، F50، F76، F77، F84، F86، F87، F90.
 

@@ -26,15 +26,17 @@ graph TD
   Order --> Payment
   Payment --> Order_Registered[Order Registered]
   Order_Registered --> StockDecrement[Stock Decrement]
-  Order_Registered --> WalletLedger[Wallet Ledger]
+  Order_Registered --> SellerPayable[Seller Payable]
   Order_Registered --> SellerFulfillment[Seller Fulfillment]
   SellerFulfillment --> CustomerStatus[Customer Order Status]
   SMS --> OrderNotification[Order Notification]
   Order_Registered --> OrderNotification
-  WalletLedger --> Settlement
-  WalletLedger --> Refund
+  SellerPayable --> Settlement
+  Settlement --> WalletLedger[Wallet Ledger]
+  WalletLedger --> Payout
   Order_Registered --> Cancel
   Cancel --> Refund
+  Cancel --> SellerPayable
   Cancel --> StockRestore[Stock Restore]
   Refund --> Credit
   Product --> Comment
@@ -57,15 +59,17 @@ graph TD
 | Payment | Order (PendingPayment) | سخت |
 | Order Registered | Payment موفق | سخت |
 | Stock Decrement | Order Registered | سخت |
-| Wallet Ledger | Order Registered | سخت |
+| Seller Payable | Order Registered (Payment موفق) | سخت |
+| Wallet Ledger | Settlement | سخت |
 | Seller Fulfillment | Order Registered، Shop | سخت |
 | Customer Order Status | Order | سخت |
 | Order Notification | SMS، Order Registered | سخت |
 | Product Browse | Product Published (تأیید Admin) | سخت |
 | Cancel | Order در Registered یا Confirmed | سخت |
-| Refund | Cancel، Wallet Ledger | سخت |
+| Refund | Cancel، Seller Payable (باطل یا اصلاح) | سخت |
 | Credit (حساب مشتری) | Refund (OD-01 DECIDED: B) | سخت. شارژ و برداشت: تصمیم نشده (F48–F49). |
-| Settlement | Wallet Ledger، حساب بانکی، Hold period (OD-03) | سخت |
+| Settlement | Seller Payable، Hold period (OD-03) | سخت |
+| Payout | Wallet Ledger، حساب بانکی (OD-03) | سخت |
 | Comment | Product، Order (اگر فقط خریدار) | وابسته به OD-09 |
 | Messaging | Identity | سخت |
 | Block | Messaging | سخت |

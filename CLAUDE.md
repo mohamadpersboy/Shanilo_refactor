@@ -22,7 +22,7 @@
 | Repository | `mohamadpersboy/Shanilo_refactor` |
 | Repository Legacy (مرجع) | `mohamadpersboy/shanilo` (کد Legacy Laravel 5.5) |
 | Branch | `main` |
-| Current Phase | Phase 1.5 (ثبت تصمیم‌های مالی) کامل شد. Phase 2 هنوز شروع نشده. |
+| Current Phase | Phase 2 (Owner Approval M-01..M-13 ثبت شد، `docs/scope/open-decisions.md` DR-05). اجرا به ترتیب 2A→2B→2C→2D→2E با توقف بعد از هر مرحله. |
 | محتوای repository | `CLAUDE.md`، `docs/`، و پایه Next.js (`app/`، `src/lib/`، `tests/`). کد Legacy در این repository نیست. |
 | کد Next.js | فقط پایه: Shell، `/api/health`، لایه ENV، Errors، Logger. Feature کسب‌وکار وجود ندارد. |
 | Tests / Build | Scriptها: `lint`, `typecheck`, `test`, `build`. نسخه‌ها: Next 16.3.8، React 19.3.0، TypeScript 6.0.3، ESLint 9.39.5، Vitest 5.0.3. |
@@ -122,7 +122,8 @@ READ → UNDERSTAND → INSPECT → PLAN → IMPLEMENT → TEST → UPDATE CLAUD
 - Test، Lint یا Type error را پنهان نکن. `any`, `@ts-ignore` فقط با دلیل ثبت‌شده.
 - تغییر معماری بدون تأیید ممنوع است. اول گزارش بده: Conflict / Impact / Options / Recommendation.
 - داده Production را حذف یا reset نکن.
-- Money با float ذخیره نشود. Convention پول قبل از پیاده‌سازی مشخص شود.
+- Money با float ذخیره نشود. Convention: `Money = {amount: integer, currency: TOMAN}`، `Number.isSafeInteger`. Tax Rate = Integer Basis Points. نوع BSON در Phase 3 تصمیم می‌شود (DR-05).
+- Terminology مالی: Checkout = ثبت سفارش مشتری. Settlement = Seller Payable→Seller Wallet. Payout = Wallet→Bank. Checkout را برای برداشت فروشنده استفاده نکن. Payment موفق مستقیم Wallet را افزایش نمی‌دهد.
 - Authorization در سمت server. Object-level authorization اجباری است.
 - Validation در سمت server.
 - Migration داده در پایان پروژه انجام شود. Idempotent و قابل verify باشد.
@@ -166,7 +167,9 @@ READ → UNDERSTAND → INSPECT → PLAN → IMPLEMENT → TEST → UPDATE CLAUD
 ## 11. TODO
 
 - [x] Phase 1.5: تصمیم‌های OD-01 (B)، OD-07 (B)، OD-11 (A)، ZarinPal ثبت و اسناد هماهنگ شد.
-- [ ] شرط شروع Phase 2: واحد Currency و نمایش داخلی Money را مالک تأیید کند. Phase 2 Readiness: READY WITH CONDITIONS.
+- [x] Phase 2 Decision Review: M-01..M-13 توسط مالک تأیید شد. Currency = TOMAN. Phase 2 Readiness: READY.
+- [x] Documentation Alignment با Owner Approval.
+- [ ] Phase 2A (`src/lib/money`: Money، Currency، Integer arithmetic، Safe-integer validation، Tests). 2B تا 2E بعد از تأیید هر مرحله.
 
 - [x] Phase 0: Legacy Reverse Engineering (`docs/legacy/`، 25 سند).
 - [x] Phase 0.5: Scope & Feature Decisions (`docs/scope/`، 12 سند).
@@ -184,4 +187,4 @@ READ → UNDERSTAND → INSPECT → PLAN → IMPLEMENT → TEST → UPDATE CLAUD
 
 ## 13. Next Phase
 
-Phase 2 — Architecture & Domain. منتظر دستور کاربر. خودکار شروع نکن. شرایط: `docs/scope/open-decisions.md` بخش «Phase 2 Readiness Review».
+Phase 2A — Money + Currency در `src/lib/money`. بعد از 2A متوقف شو و گزارش بده. به 2B خودکار وارد نشو. جزئیات: `docs/scope/open-decisions.md` بخش DR-05 و «Phase 2 Readiness Review». اگر Conflict جدید پیدا شد، قبل از تغییر معماری Decision Review بده.

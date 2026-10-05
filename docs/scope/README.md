@@ -16,7 +16,7 @@
 | `data-migration-scope.md` | طبقه‌بندی داده Migration |
 | `security-decisions.md` | تصمیم‌های امنیتی |
 | `legacy-review.md` | بازبینی 16 Contradiction و 38 Unknown |
-| `open-decisions.md` | تصمیم‌های نهایی Phase 1.5 (Decision Records)، تصمیم‌های باز، خطاهای مستندات Phase 0، Feature جدید احتمالی، آمادگی Phase 2 |
+| `open-decisions.md` | تصمیم‌های نهایی Phase 1.5 و Phase 2 (DR-01..DR-05)، تصمیم‌های باز، خطاهای مستندات Phase 0، Feature جدید احتمالی، آمادگی Phase 2 |
 
 ## برچسب مبنا
 

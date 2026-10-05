@@ -62,7 +62,7 @@
 | Confirmed→InContact | مشتری یا فروشنده | |
 | InContact→Shipped | فروشنده | |
 | Shipped→Received | مشتری | |
-| Registered→Cancelled، Confirmed→Cancelled | مشتری یا فروشنده | یک بار. موجودی برمی‌گردد. برگشت وجه ثبت می‌شود. |
+| Registered→Cancelled، Confirmed→Cancelled | مشتری یا فروشنده | یک بار. موجودی برمی‌گردد. Refund کامل به Customer Credit ثبت می‌شود. Seller Payable باطل یا اصلاح می‌شود (M-10). |
 
 - Forbidden: پرش مرحله. بازگشت به مرحله قبل. تغییر از Received یا Cancelled. لغو از InContact، Shipped، Received (Legacy: لغو فقط `status<3`). تغییر توسط غیرمالک.
 - Terminal: Received، Cancelled.
@@ -79,22 +79,28 @@
 | Allowed | Pending→Succeeded، Pending→Failed، Pending→Expired |
 | Forbidden | تغییر Succeeded و Failed. Succeeded دوم برای همان Payment. |
 | Terminal | Succeeded، Failed. Expired: UNKNOWN (آیا بانک بعد از انقضا می‌تواند موفق اعلام کند؟ U11، نیاز به بررسی قرارداد بانک). |
-| Refund | در بانک نیست (B6). Refund داخلی یک ورودی Credit مشتری است (OD-01 DECIDED: B). |
+| Refund | در بانک نیست (B6). Refund داخلی یک ورودی Customer Credit است (OD-01 DECIDED: B). MVP: `refundAmount = paidAmount`، فقط لغو کامل (M-08). Seller Wallet را مستقیم تغییر نمی‌دهد. |
 | Credit payment | فوری Succeeded. Credit مشتری وجود دارد (OD-01 B). خود پرداخت با Credit تصمیم نشده (F47). |
 | Basis | EVIDENCE-BASED. Expired: UNKNOWN |
 
-## 6. Wallet / Settlement
+## 6. Seller Payable / Settlement / Wallet / Payout
+
+جریان (M-10): Customer Payment → Order Financials → Seller Payable → Settlement → Seller Wallet → Payout. Payment موفق Wallet را مستقیم افزایش نمی‌دهد.
+
+Terminology: Settlement = Payable→Wallet. Payout = Wallet→Bank. Checkout = ثبت سفارش مشتری. در این بخش «Checkout» فقط نام Legacy است.
 
 | مورد | مقدار |
 |---|---|
-| Wallet Legacy | بدون وضعیت. تراکنش `add` / `sub`. |
-| Wallet New | ورودی دفتر نامتغیر (Credit/Debit). موجودی دو بخش دارد: Held و Available (دوره نگهداری: OD-03). |
-| Settlement (Checkout) Legacy | pending→done / denied. Admin هر وضعیت را به هر وضعیت می‌برد. |
-| Settlement New | Pending، Done، Denied. Pending→Done، Pending→Denied. Done و Denied نهایی. |
+| Seller Payable | Domain Concept مستقل (DR-05). Payment موفق آن را ایجاد یا فعال می‌کند. Cancel/Refund آن را باطل یا اصلاح می‌کند. وضعیت‌ها و Operation ID Settlement: بعد از طراحی Payable (Phase 3 و 12). تصمیم نشده. |
+| Settlement | Payable→Wallet. Rounding: Phase 12. Idempotency Key: Business Operation ID (نه `settlement:{orderId}` فرضی). |
+| Wallet Legacy | بدون وضعیت. تراکنش `add` / `sub`. در Legacy پرداخت موفق Wallet را مستقیم افزایش می‌داد. فقط Evidence است. |
+| Wallet New | ورودی دفتر نامتغیر. نام «Credit/Debit» برای نوع ورودی استفاده نشود (ابهام با Customer Credit). نام نوع ورودی‌ها در Phase 3 تعیین می‌شود. موجودی: Held و Available (دوره نگهداری: OD-03). |
+| Payout Legacy (`checkouts`) | pending→done / denied. Admin هر وضعیت را به هر وضعیت می‌برد. |
+| Payout New | Pending، Done، Denied. Pending→Done، Pending→Denied. Done و Denied نهایی. |
 | Added | Cancelled by requester: UNKNOWN (Legacy ندارد). |
-| Forbidden | تغییر Done/Denied. مبلغ بیش از Available. دو درخواست Pending برای یک Wallet. |
+| Forbidden | تغییر Done/Denied. مبلغ بیش از Available. دو درخواست Pending برای یک Wallet. تغییر مستقیم Wallet توسط Payment یا Refund. |
 | Terminal | Done، Denied |
-| Credit (کاربر) | RequestCheckoutCredit: pending→done/reject. Credit مشتری وجود دارد (OD-01 B). برداشت تصمیم نشده (F49). |
+| Customer Credit (کاربر) | RequestCheckoutCredit (Legacy): pending→done/reject. Credit مشتری وجود دارد (OD-01 B). برداشت تصمیم نشده (F49). |
 | Basis | EVIDENCE-BASED. Credit: OPEN |
 
 ## 7. Shop

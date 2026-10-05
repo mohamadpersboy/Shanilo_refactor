@@ -1,5 +1,7 @@
 # Open Decisions Review
 
+> **سند تاریخی (2026-10-04).** تصمیم‌های بعدی در `open-decisions.md` (DR-01..DR-05) ثبت شده‌اند. در تعارض، `open-decisions.md` معتبر است.
+
 تاریخ: 2026-10-04. نوع کار: READ → INSPECT → ANALYZE → RECOMMEND → REPORT. هیچ کدی تغییر نکرد. هیچ Secret در این سند نیست. فقط وضعیت `SECRET PRESENT` / `PLACEHOLDER` / `NOT FOUND` ثبت شده است.
 
 مبنا: repository Legacy `mohamadpersboy/shanilo`، commit `53100cd`، branch `main`. Legacy اجرا نشد. همه یافته‌ها از خواندن کد و `grep` آمده‌اند. تصمیم‌ها هنوز ثبت نشده‌اند. مالک تصمیم می‌گیرد.

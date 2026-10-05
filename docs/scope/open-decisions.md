@@ -51,6 +51,42 @@
 
 وضعیت پرداخت: Mellat = confirmed. ZarinPal = confirmed. COD/Home = still open (OD-12). AsanPardakht = still unknown (OD-12).
 
+### DR-05 — Phase 2 Owner Approval (M-01..M-13)
+
+مالک M-01 تا M-13 را تأیید کرد. هیچ Model، Service، Schema یا Provider ساخته نشد. فقط Domain Contract در `src/lib/money` و Phase 2B تا 2E ساخته می‌شود.
+
+| کد | تصمیم |
+|---|---|
+| M-01 Currency | `TOMAN`. تبدیل Toman→Rial فقط داخل Provider Currency Adapter. |
+| M-02 Money Representation | `Money = {amount: integer, currency: TOMAN}`. در TypeScript: `number` + `Number.isSafeInteger()`. نوع BSON در Phase 3 تصمیم و تست می‌شود (Int32، Long یا گزینه دیگر). Repository از ذخیره Float جلوگیری می‌کند. |
+| M-03 Rounding Algorithm | الگوریتم فعال Legacy (OD-11 A). با Integer Arithmetic دقیق. |
+| M-04 Rounding Points | قیمت واحد بعد از تخفیف: `roundPrice`. جمع قلم = قیمت واحد گرد‌شده × تعداد. Subtotal = جمع قلم‌ها. Tax = `roundPrice(subtotal × rateBps / 10000)`. Shipping گرد نمی‌شود. Total = subtotal + tax + shipping بدون گرد مجدد. |
+| M-05 Tax Policy | `rate` = Integer Basis Points (1000 = 10%). بدون Float. بدون Admin UI. بدون Tax Engine. نرخ Legacy = 0 تاریخی. نرخ آینده حدس زده نمی‌شود. |
+| M-06 Payment Amount | `paymentAmount = order.total`. |
+| M-07 Customer Credit | حساب و دفتر مستقل از Seller Wallet (OD-01 B). |
+| M-08 Refund | MVP: فقط لغو کامل سفارش. `refundAmount = paidAmount`. مقصد: Customer Credit. Refund جزئی، درصدی، Per-line و Allocation پیچیده: OUT OF MVP. مبلغ از قیمت فعلی Product محاسبه نمی‌شود. |
+| M-09 Seller Wallet | Ledger مستقل. Payment موفق Wallet را مستقیم افزایش نمی‌دهد. |
+| M-10 Seller Settlement | Seller Payable یک Domain Concept مستقل است (Option B). Settlement = انتقال Payable→Wallet. Customer Refund مستقیم Seller Wallet را تغییر نمی‌دهد. Cancel/Refund، Payable را باطل یا اصلاح می‌کند. |
+| M-11 Financial Snapshot | Order تاریخی است. Snapshot: currency، subtotal، discount، tax، shipping، total، paidAmount. هر قلم: unitPrice، discountPercent، finalUnitPrice، quantity، lineTotal. Policy: نرخ Tax و `enabled`، نسخه RoundingPolicy، currency. |
+| M-12 Transaction Boundary | فقط عملیات چندسندی Transaction می‌خواهند: Confirm Payment، Refund، Settlement، Payout. اول Single-Document Atomicity بررسی شود. هیچ HTTP، Gateway یا SMS call داخل Transaction نباشد. مرز نهایی: Phase 3. |
+| M-13 Idempotency | Key از Business Operation ID می‌آید. Unique Constraint + Conditional State Transition. Callback تکراری اثر مالی دوم ندارد. `settlement:{orderId}` فرض نمی‌شود. |
+
+**جریان مالی:** Customer Payment → Order Financials → Seller Payable → Settlement → Seller Wallet.
+
+**Terminology (نهایی):**
+
+| اصطلاح | معنی |
+|---|---|
+| Checkout | ثبت سفارش مشتری. |
+| Settlement | تسویه Seller Payable و انتقال به Seller Wallet. |
+| Payout | برداشت موجودی Seller Wallet توسط فروشنده (Wallet→Bank). |
+
+واژه Checkout برای برداشت فروشنده استفاده نمی‌شود. جدول Legacy `checkouts` و `CheckoutController` همان Payout جدید هستند. Legacy که Wallet را زودتر تغییر می‌دهد فقط Evidence است.
+
+**Deferred:** Settlement Rounding → Phase 12. Zero-price After Rounding → Phase 8.
+
+**ترتیب اجرا:** 2A Money + Currency → 2B RoundingPolicy → 2C TaxPolicy + PriceCalculation + FinancialSnapshot Types → 2D Financial Errors + Idempotency Types → 2E PaymentProvider Contracts. بعد از هر مرحله توقف و گزارش. Business Feature جدید در 2A تا 2E اضافه نمی‌شود.
+
 ### Requirements برای Phase 2 (فقط ثبت، بدون Implementation)
 
 1. **Money Model حداقل مفاهیم:** `Money`، `Currency`، `RoundingPolicy`، `TaxPolicy`، `PriceCalculation`.
@@ -59,30 +95,35 @@
 4. **Transaction Boundary:** منطق مالی Legacy بین Model، Controller و Listener پخش است. Phase 2 مرز Transaction را برای این موارد تعیین می‌کند: Create Order، Confirm Payment، Cancel Order، Refund، Seller Wallet Transaction، Customer Credit Transaction، Seller Settlement.
 5. **Provider Boundary:** بالا در DR-04.
 
-### Phase 2 Readiness Review
+### Phase 2 Readiness Review (به‌روز شده بعد از Owner Approval)
 
-Blockerهای Money که حل شدند: جهت Wallet/Credit (OD-01)، مدل Tax (OD-07)، Rounding (OD-11)، Providerهای پرداخت (ZarinPal).
+Blockerهای Money که حل شدند: جهت Wallet/Credit (OD-01)، مدل Tax (OD-07)، Rounding (OD-11)، Providerهای پرداخت (ZarinPal)، واحد Currency (M-01)، نمایش Money (M-02)، نقاط اعمال Rounding (M-04)، مبلغ Refund (M-08)، Seller Payable (M-09/M-10)، اصول Transaction و Idempotency (M-12، M-13).
 
 باقی‌مانده:
 
 | مورد | وضعیت | Blocks Phase 2؟ |
 |---|---|---|
-| واحد Currency و نمایش داخلی Money | **DECISION REQUIRED.** Legacy: تومان Integer. Mellat: ریال (`convertToRial`). واحد Log بانک UNKNOWN (C10). | **Phase 2 Decision Blocker.** باید اولین تصمیم Phase 2 باشد. بدون آن، Money Model نهایی نمی‌شود. شروع Phase 2 را متوقف نمی‌کند. |
-| نقاط اعمال Rounding | Legacy `roundPrice` را روی قیمت قلم، مبلغ تسویه و مالیات اعمال می‌کند. قاعده فقط الگوریتم را تثبیت کرد. | در Phase 2 با تأیید مالک. Rule وابسته به واحد Currency است. |
-| مبلغ Refund و برگشت Wallet | Legacy: `credit += order.total`. Wallet: `calculateCheckoutPrice()`. این دو برابر نیستند. OD-01 فقط حساب‌ها را مشخص کرد. | قبل از مرز Transaction برای Refund. |
-| Commission (OD-02) | باز | خیر. قبل از نهایی شدن ورودی Wallet. |
-| Settlement و Hold period (OD-03) | باز | خیر. قبل از نهایی شدن Held/Available در Wallet. |
+| BSON Storage Type برای Money (Int32، Long یا گزینه دیگر) | تصمیم در Phase 3 با تست | خیر. |
+| مرز نهایی Transaction هر عملیات مالی | تصمیم در Phase 3 (Schema و Repository) | خیر. |
+| Operation ID و Idempotency Key برای Settlement | بعد از طراحی Payable مشخص می‌شود. `settlement:{orderId}` فرض نمی‌شود. | خیر. |
+| Settlement Rounding | Phase 12 (وابسته به Commission و Seller Financial Rules) | خیر. |
+| Zero-price After Rounding | Phase 8 (Product Pricing). تا آن زمان رفتار Legacy فقط Evidence است. | خیر. |
+| Commission (OD-02) | باز | خیر. قبل از طراحی Settlement. |
+| Settlement، Hold period و Payout (OD-03) | باز | خیر. قبل از طراحی Payable→Wallet. |
 | COD (OD-12) | باز | خیر. روش پرداخت قابل توسعه باشد. |
 | F47، F48، F49 (پرداخت، شارژ، برداشت با Credit) | تصمیم نشده | خیر. قبل از نهایی شدن انواع Credit Transaction. |
-| نرخ Tax و `enabled` | تصمیم نشده | خیر. فقط `TaxPolicy` طراحی می‌شود. |
+| نرخ Tax و `enabled` | تصمیم نشده. نرخ Legacy فقط 0 تاریخی است. نرخ آینده حدس زده نمی‌شود. | خیر. |
+| واحد Log بانک Mellat (C10) | UNKNOWN. | خیر. Phase 12/15. |
+| واحد ZarinPal | UNVERIFIED. از مستندات رسمی در Phase 12 تأیید شود. | خیر. |
 
-**Phase 2 Readiness: READY WITH CONDITIONS.** شرط: واحد Currency و نمایش داخلی Money در ابتدای Phase 2 با تأیید مالک مشخص شود.
+**Phase 2 Readiness: READY.** Phase 2A تا 2E طبق ترتیب تأییدشده اجرا می‌شود (بخش DR-05).
 
 ## 1. Decisions Required From User (15 کل: 3 DECIDED، 12 باز)
 
 ### OD-01 — مدل پول و مقصد برگشت وجه
 
 - **Status: DECIDED — Option B (Phase 1.5).** رکورد: DR-01. متن زیر Evidence و گزینه‌های اولیه است.
+- **Supplement (Phase 2):** Seller Payable مفهومی مستقل بین Payment و Seller Wallet است (DR-05، M-10). Refund مشتری به Customer Credit می‌رود و Seller Wallet را مستقیم تغییر نمی‌دهد.
 
 - **Context:** Legacy دو استخر پول دارد: Wallet فروشگاه و `users.credit`. لغو سفارش وجه را به Credit کاربر می‌دهد.
 - **Evidence:** C9، B6، BR-19، BR-23.
@@ -107,6 +148,8 @@ Blockerهای Money که حل شدند: جهت Wallet/Credit (OD-01)، مدل Ta
 - **Needed before:** Phase 12
 
 ### OD-03 — تسویه در MVP و دوره نگهداری وجه
+
+- **Terminology (Phase 2):** «Settlement» = Payable→Wallet. «Payout» = Wallet→Bank. واژه «تسویه» در متن Legacy این OD برداشت فروشنده (Payout) را هم شامل می‌شد. Settlement Rounding به Phase 12 رفته است.
 
 - **Context:** Legacy ۳ روز نگهداری دارد و حداقل برداشت 10,000. تسویه در زنجیره MVP نیست.
 - **Evidence:** BR-25، BR-26، G4.
@@ -205,6 +248,7 @@ Blockerهای Money که حل شدند: جهت Wallet/Credit (OD-01)، مدل Ta
 ### OD-11 — قاعده گردکردن قیمت
 
 - **Status: DECIDED — Option A (Phase 1.5).** رکورد: DR-03. متن زیر Evidence و گزینه‌های اولیه است.
+- **Supplement (Phase 2):** نقاط اعمال Rounding در M-04 (DR-05) تثبیت شد. Zero-price After Rounding در Phase 8 بررسی می‌شود.
 
 - **Context:** دو الگوریتم. Model فعال: به 100 (زیر 100000) یا 1000.
 - **Evidence:** C5، BR-04.
