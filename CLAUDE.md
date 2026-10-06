@@ -22,9 +22,9 @@
 | Repository | `mohamadpersboy/Shanilo_refactor` |
 | Repository Legacy (مرجع) | `mohamadpersboy/shanilo` (کد Legacy Laravel 5.5) |
 | Branch | `main` |
-| Current Phase | Phase 2 (Owner Approval M-01..M-13 ثبت شد، `docs/scope/open-decisions.md` DR-05). 2A، 2B و 2C کامل شد. منتظر تأیید برای 2D. ترتیب: 2A→2B→2C→2D→2E با توقف بعد از هر مرحله. |
+| Current Phase | Phase 2 (Owner Approval M-01..M-13 ثبت شد، `docs/scope/open-decisions.md` DR-05). 2A، 2B، 2C و 2D کامل شد. منتظر تأیید برای 2E. ترتیب: 2A→2B→2C→2D→2E با توقف بعد از هر مرحله. |
 | محتوای repository | `CLAUDE.md`، `docs/`، و پایه Next.js (`app/`، `src/lib/`، `tests/`). کد Legacy در این repository نیست. |
-| کد Next.js | پایه: Shell، `/api/health`، لایه ENV، Errors، Logger. Phase 2A: `src/lib/money` (Money، Currency، Integer arithmetic). Phase 2B: `src/lib/money/rounding.ts` (RoundingPolicy). Phase 2C: `tax.ts`، `pricing.ts`، `snapshot.ts` (TaxPolicy، PriceCalculation، FinancialSnapshot). Feature کسب‌وکار وجود ندارد. |
+| کد Next.js | پایه: Shell، `/api/health`، لایه ENV، Errors، Logger. Phase 2A: `src/lib/money` (Money، Currency، Integer arithmetic). Phase 2B: `src/lib/money/rounding.ts` (RoundingPolicy). Phase 2C: `tax.ts`، `pricing.ts`، `snapshot.ts` (TaxPolicy، PriceCalculation، FinancialSnapshot). Phase 2D: `financial-errors.ts`، `idempotency.ts`. Feature کسب‌وکار وجود ندارد. |
 | Tests / Build | Scriptها: `lint`, `typecheck`, `test`, `build`. نسخه‌ها: Next 16.3.8، React 19.3.0، TypeScript 6.0.3، ESLint 9.39.5، Vitest 5.0.3. |
 | Open Decisions | 15 مورد: 3 DECIDED (OD-01 B، OD-07 B، OD-11 A)، 12 باز. ZarinPal DECIDED. رکوردها: `docs/scope/open-decisions.md` بخش 0. گزارش قدیمی: `docs/scope/open-decisions-review.md` |
 
@@ -170,8 +170,9 @@ READ → UNDERSTAND → INSPECT → PLAN → IMPLEMENT → TEST → UPDATE CLAUD
 - [x] Phase 2 Decision Review: M-01..M-13 توسط مالک تأیید شد. Currency = TOMAN. Phase 2 Readiness: READY.
 - [x] Documentation Alignment با Owner Approval.
 - [x] Phase 2A (`src/lib/money`: Money، Currency، Integer arithmetic، Safe-integer validation، Tests).
+- [x] Phase 2D (Financial Errors، Idempotency Types). Phase 2D completed. جزئیات در بخش 15.
 - [x] Phase 2C (TaxPolicy، PriceCalculation، FinancialSnapshot). Phase 2C completed. جزئیات در بخش 14.
-- [x] Phase 2B (RoundingPolicy). Phase 2B RoundingPolicy completed. جزئیات در بخش 13. 2D و 2E بعد از تأیید هر مرحله.
+- [x] Phase 2B (RoundingPolicy). Phase 2B RoundingPolicy completed. جزئیات در بخش 13. 2E بعد از تأیید.
 
 - [x] Phase 0: Legacy Reverse Engineering (`docs/legacy/`، 25 سند).
 - [x] Phase 0.5: Scope & Feature Decisions (`docs/scope/`، 12 سند).
@@ -228,6 +229,29 @@ Phase 2C completed. فایل‌ها: `src/lib/money/tax.ts`، `pricing.ts`، `sn
 - Settlement Rounding (Phase 12)، Zero-price after Rounding (Phase 8) و نوع BSON (Phase 3) تصمیم گرفته نشدند.
 - Legacy: `Cart::getTaxAttribute` = `roundPrice(subPercent(total, TAX=0))`. `CartDetail::total` = Σ `pure_price × count` + tax + transport. Shipping در Legacy گرد می‌شود (`roundPrice`). در Shanilo جدید Shipping گرد نمی‌شود (M-04). این یک تغییر آگاهانه است.
 
-## 15. Next Phase
+## 15. Financial Errors و Idempotency Types (Phase 2D)
 
-Phase 2D — Financial Errors + Idempotency Types (منتظر دستور کاربر). به 2D خودکار وارد نشو. جزئیات: `docs/scope/open-decisions.md` بخش DR-05 و «Phase 2 Readiness Review». اگر Conflict جدید پیدا شد، قبل از تغییر معماری Decision Review بده.
+Phase 2D completed. فقط Type، Error و Pure Helper. بدون Persistence، MongoDB، Transaction، Service، Provider، API، ENV.
+
+**Financial Errors** (`src/lib/money/financial-errors.ts`):
+
+- `FinancialError extends AppError`. `MoneyError` حالا از `FinancialError` ارث می‌برد. نام، `moneyCode`، Codeهای قبلی و status 500 آن تغییر نکرد. Hierarchy تکراری ساخته نشد.
+- `message` پیام عمومی و ثابت هر کلاس است. جزئیات داخلی فقط در `internalDetail` است و نباید در Response بیاید. `toErrorResponse` فقط `code` و `message` را برمی‌گرداند.
+- Codeها (stable، در `FINANCIAL_ERROR_CODES`): `FINANCIAL_STATE_CONFLICT` (409)، `FINANCIAL_INSUFFICIENT_FUNDS` (422)، `FINANCIAL_OPERATION_CONFLICT` (409)، `IDEMPOTENCY_CONFLICT` (409). Status فقط راهنمای Mapping آینده است. Domain به HTTP وابسته نیست.
+- Invalid Financial Input قبلاً با `MoneyError` پوشش داده شده (`MONEY_INVALID_AMOUNT`، `MONEY_OVERFLOW`، `MONEY_CURRENCY_MISMATCH`، `MONEY_INVALID_CURRENCY`). تکرار نشد. ورودی نامعتبر Operation ID یا Hash با `ValidationError` (400) رد می‌شود.
+- State Conflict و Insufficient Funds فقط Contract هستند. State machine، Credit و Wallet ساخته نشد.
+- Operation Conflict (دو Operation با هم تعارض دارند) از Idempotency Conflict (همان ID با Payload دیگر) جداست.
+
+**Idempotency** (`src/lib/money/idempotency.ts`):
+
+- `BusinessOperationId` و `OperationPayloadHash`: String مبهم (opaque) و Branded. غیرخالی، بدون Whitespace-only، حداکثر 255 کاراکتر (حد فنی). UUID لازم نیست. مقدار بدون تغییر نگه داشته می‌شود و با String equality مقایسه می‌شود. با `OrderId`، `PaymentId`، `RefundId`، `SettlementId`، `PayoutId` یکی نیست.
+- `OperationStatus` = `PENDING | SUCCEEDED | FAILED` (Lifecycle). `FAILED` Terminal فرض نشده. Retry Policy مال Service آینده است.
+- `IdempotencyRecord` = `{operationId, payloadHash, status}`. `IdempotentOperation<TPayload>` = `{operationId, payloadHash, payload}`. هر دو frozen.
+- `IdempotencyOutcome` (نتیجه Request، جدا از Status): `NEW` (Record نیست)، `IN_PROGRESS` (همان ID و Hash، Status = PENDING)، `REPLAYED` (همان ID و Hash، Status = SUCCEEDED یا FAILED. دوباره اجرا نکن. `record.status` را ببین)، `CONFLICT` (همان ID، Hash دیگر).
+- `classifyIdempotentRequest(request, existing?)` تابع خالص است. `assertNoIdempotencyConflict` برای CONFLICT خطای `IDEMPOTENCY_CONFLICT` می‌اندازد.
+- Hash محاسبه نمی‌شود و Payload مقایسه عمیق نمی‌شود.
+- هنوز OPEN: Operation ID دقیق Settlement و Payment (`settlement:{orderId}` فرض نمی‌شود)، Storage Model در MongoDB، Schema و Index برای Idempotency، Retention/TTL، Retry Policy، Keyهای مخصوص Gateway، Provider پرداخت. Atomic State Transition و Transaction در Phase 3 و بعد از آن طراحی می‌شوند (M-12، M-13).
+
+## 16. Next Phase
+
+Phase 2E — PaymentProvider Contracts (منتظر دستور کاربر). به 2E خودکار وارد نشو. جزئیات: `docs/scope/open-decisions.md` بخش DR-05 و «Phase 2 Readiness Review». اگر Conflict جدید پیدا شد، قبل از تغییر معماری Decision Review بده.

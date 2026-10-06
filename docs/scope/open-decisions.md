@@ -87,7 +87,7 @@
 
 **ترتیب اجرا:** 2A Money + Currency → 2B RoundingPolicy → 2C TaxPolicy + PriceCalculation + FinancialSnapshot Types → 2D Financial Errors + Idempotency Types → 2E PaymentProvider Contracts. بعد از هر مرحله توقف و گزارش. Business Feature جدید در 2A تا 2E اضافه نمی‌شود.
 
-**وضعیت اجرا:** 2A، 2B و 2C کامل شد. 2D و 2E منتظر تأیید. در 2C نرخ Tax (`rateBps`) تعیین نشد و OPEN ماند. Snapshot شامل `refundedAmount` نیست. Settlement و Payable در Phase 12 هستند. جزئیات: `CLAUDE.md` بخش 14.
+**وضعیت اجرا:** 2A، 2B، 2C و 2D کامل شد. 2E منتظر تأیید. در 2C نرخ Tax (`rateBps`) تعیین نشد و OPEN ماند. Snapshot شامل `refundedAmount` نیست. Settlement و Payable در Phase 12 هستند. جزئیات: `CLAUDE.md` بخش 14. 2D: Financial Errors و Idempotency Types فقط Contract هستند (`CLAUDE.md` بخش 15). Operation ID دقیق Settlement/Payment، Persistence، TTL و Retry Policy همچنان OPEN یا Deferred هستند. همان Operation ID با Payload دیگر = `IDEMPOTENCY_CONFLICT`. همان ID و همان Hash = Replay.
 
 ### Requirements برای Phase 2 (فقط ثبت، بدون Implementation)
 
