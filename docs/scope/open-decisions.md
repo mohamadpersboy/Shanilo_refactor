@@ -87,7 +87,9 @@
 
 **ترتیب اجرا:** 2A Money + Currency → 2B RoundingPolicy → 2C TaxPolicy + PriceCalculation + FinancialSnapshot Types → 2D Financial Errors + Idempotency Types → 2E PaymentProvider Contracts. بعد از هر مرحله توقف و گزارش. Business Feature جدید در 2A تا 2E اضافه نمی‌شود.
 
-**وضعیت اجرا:** 2A، 2B، 2C و 2D کامل شد. 2E منتظر تأیید. در 2C نرخ Tax (`rateBps`) تعیین نشد و OPEN ماند. Snapshot شامل `refundedAmount` نیست. Settlement و Payable در Phase 12 هستند. جزئیات: `CLAUDE.md` بخش 14. 2D: Financial Errors و Idempotency Types فقط Contract هستند (`CLAUDE.md` بخش 15). Operation ID دقیق Settlement/Payment، Persistence، TTL و Retry Policy همچنان OPEN یا Deferred هستند. همان Operation ID با Payload دیگر = `IDEMPOTENCY_CONFLICT`. همان ID و همان Hash = Replay.
+**وضعیت اجرا:** 2A تا 2E کامل شد. 2F منتظر تأیید. در 2C نرخ Tax (`rateBps`) تعیین نشد و OPEN ماند. Snapshot شامل `refundedAmount` نیست. Settlement و Payable در Phase 12 هستند. جزئیات: `CLAUDE.md` بخش 14. 2D: Financial Errors و Idempotency Types فقط Contract هستند (`CLAUDE.md` بخش 15). Operation ID دقیق Settlement/Payment، Persistence، TTL و Retry Policy همچنان OPEN یا Deferred هستند. همان Operation ID با Payload دیگر = `IDEMPOTENCY_CONFLICT`. همان ID و همان Hash = Replay.
+
+**2E (PaymentProvider Contracts، `CLAUDE.md` بخش 16):** `PaymentProvider` با `createPayment` و `verifyPayment`. Stateهای Domain برای Verification: `SUCCESS | FAILED | PENDING`. Callback ≠ تأیید پرداخت. Money Domain = TOMAN. تبدیل به واحد Gateway فقط داخل Adapter. شناسه‌های مخصوص Gateway (Authority، RefId، SaleOrderId، SaleReferenceId) وارد Domain نمی‌شوند و فقط به `providerPaymentId` و `providerReference` map می‌شوند. Deferred: Refund Provider Contract، Inquiry، Credential و URL، Retry و Idempotency Key مخصوص Gateway، Schema پرداخت، Callback Route و Webhook، Provider Selection و Config.
 
 ### Requirements برای Phase 2 (فقط ثبت، بدون Implementation)
 

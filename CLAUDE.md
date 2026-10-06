@@ -22,9 +22,9 @@
 | Repository | `mohamadpersboy/Shanilo_refactor` |
 | Repository Legacy (مرجع) | `mohamadpersboy/shanilo` (کد Legacy Laravel 5.5) |
 | Branch | `main` |
-| Current Phase | Phase 2 (Owner Approval M-01..M-13 ثبت شد، `docs/scope/open-decisions.md` DR-05). 2A، 2B، 2C و 2D کامل شد. منتظر تأیید برای 2E. ترتیب: 2A→2B→2C→2D→2E با توقف بعد از هر مرحله. |
+| Current Phase | Phase 2 (Owner Approval M-01..M-13 ثبت شد، `docs/scope/open-decisions.md` DR-05). 2A تا 2E کامل شد. منتظر تأیید برای 2F. ترتیب: 2A→2B→2C→2D→2E با توقف بعد از هر مرحله. |
 | محتوای repository | `CLAUDE.md`، `docs/`، و پایه Next.js (`app/`، `src/lib/`، `tests/`). کد Legacy در این repository نیست. |
-| کد Next.js | پایه: Shell، `/api/health`، لایه ENV، Errors، Logger. Phase 2A: `src/lib/money` (Money، Currency، Integer arithmetic). Phase 2B: `src/lib/money/rounding.ts` (RoundingPolicy). Phase 2C: `tax.ts`، `pricing.ts`، `snapshot.ts` (TaxPolicy، PriceCalculation، FinancialSnapshot). Phase 2D: `financial-errors.ts`، `idempotency.ts`. Feature کسب‌وکار وجود ندارد. |
+| کد Next.js | پایه: Shell، `/api/health`، لایه ENV، Errors، Logger. Phase 2A: `src/lib/money` (Money، Currency، Integer arithmetic). Phase 2B: `src/lib/money/rounding.ts` (RoundingPolicy). Phase 2C: `tax.ts`، `pricing.ts`، `snapshot.ts` (TaxPolicy، PriceCalculation، FinancialSnapshot). Phase 2D: `financial-errors.ts`، `idempotency.ts`. Phase 2E: `src/lib/payment` (PaymentProvider Contracts). Feature کسب‌وکار وجود ندارد. |
 | Tests / Build | Scriptها: `lint`, `typecheck`, `test`, `build`. نسخه‌ها: Next 16.3.8، React 19.3.0، TypeScript 6.0.3، ESLint 9.39.5، Vitest 5.0.3. |
 | Open Decisions | 15 مورد: 3 DECIDED (OD-01 B، OD-07 B، OD-11 A)، 12 باز. ZarinPal DECIDED. رکوردها: `docs/scope/open-decisions.md` بخش 0. گزارش قدیمی: `docs/scope/open-decisions-review.md` |
 
@@ -170,9 +170,10 @@ READ → UNDERSTAND → INSPECT → PLAN → IMPLEMENT → TEST → UPDATE CLAUD
 - [x] Phase 2 Decision Review: M-01..M-13 توسط مالک تأیید شد. Currency = TOMAN. Phase 2 Readiness: READY.
 - [x] Documentation Alignment با Owner Approval.
 - [x] Phase 2A (`src/lib/money`: Money، Currency، Integer arithmetic، Safe-integer validation، Tests).
+- [x] Phase 2E (PaymentProvider Contracts). Phase 2E completed. جزئیات در بخش 16.
 - [x] Phase 2D (Financial Errors، Idempotency Types). Phase 2D completed. جزئیات در بخش 15.
 - [x] Phase 2C (TaxPolicy، PriceCalculation، FinancialSnapshot). Phase 2C completed. جزئیات در بخش 14.
-- [x] Phase 2B (RoundingPolicy). Phase 2B RoundingPolicy completed. جزئیات در بخش 13. 2E بعد از تأیید.
+- [x] Phase 2B (RoundingPolicy). Phase 2B RoundingPolicy completed. جزئیات در بخش 13. 2F و بعد از آن با تأیید.
 
 - [x] Phase 0: Legacy Reverse Engineering (`docs/legacy/`، 25 سند).
 - [x] Phase 0.5: Scope & Feature Decisions (`docs/scope/`، 12 سند).
@@ -252,6 +253,24 @@ Phase 2D completed. فقط Type، Error و Pure Helper. بدون Persistence، M
 - Hash محاسبه نمی‌شود و Payload مقایسه عمیق نمی‌شود.
 - هنوز OPEN: Operation ID دقیق Settlement و Payment (`settlement:{orderId}` فرض نمی‌شود)، Storage Model در MongoDB، Schema و Index برای Idempotency، Retention/TTL، Retry Policy، Keyهای مخصوص Gateway، Provider پرداخت. Atomic State Transition و Transaction در Phase 3 و بعد از آن طراحی می‌شوند (M-12، M-13).
 
-## 16. Next Phase
+## 16. PaymentProvider Contracts (Phase 2E)
 
-Phase 2E — PaymentProvider Contracts (منتظر دستور کاربر). به 2E خودکار وارد نشو. جزئیات: `docs/scope/open-decisions.md` بخش DR-05 و «Phase 2 Readiness Review». اگر Conflict جدید پیدا شد، قبل از تغییر معماری Decision Review بده.
+Phase 2E completed. فقط Contract در `src/lib/payment`. بدون HTTP، SOAP، SDK، Gateway، Route، Webhook، Database، PaymentService، ENV جدید، Dependency جدید. Adapterها (`MellatProvider`، `ZarinPalProvider`) ساخته نشدند.
+
+معماری: `PaymentService → PaymentProvider → Adapter`. PaymentService اصطلاحات Gateway (SOAP، REST، Authority، RefId، SaleOrderId، SaleReferenceId) را نمی‌شناسد.
+
+- `PaymentProvider { id; createPayment(PaymentRequest); verifyPayment(PaymentVerificationRequest) }`. کوچک و Interface Segregation. Provider فقط Integration با Gateway است: Order یا Payment record را update نمی‌کند، Idempotency را ذخیره نمی‌کند، Browser را redirect نمی‌کند، Response خام Gateway را نمی‌دهد. Refund و Settlement داخل آن نیستند. Inquiry به Phase پیاده‌سازی موکول شد. بعداً می‌تواند Interface جدا باشد (`PaymentInquiryProvider`) بدون تغییر این Interface.
+- `PaymentProviderId` = `mellat | zarinpal` (فقط literal، بدون import Implementation).
+- Money Boundary: Domain فقط `Money` (TOMAN، integer) می‌شناسد. `PaymentRequest.amount` باید Money مثبت باشد (عدد خام رد می‌شود). تبدیل تومان به واحد Gateway (مثلاً ریال) فقط داخل Adapter و فقط طبق Contract واقعی همان Gateway انجام می‌شود. هیچ تابع تبدیل در `Money` یا Contract نیست. واحد ZarinPal هنوز UNVERIFIED است و در Phase 12 از مستندات رسمی تأیید می‌شود.
+- `PaymentRequest = {amount, operationId (BusinessOperationId از 2D), callbackUrl, description?}`. `callbackUrl` آدرس مطلق http/https بدون Credential. اعتبارسنجی با `URL` داخلی. `description` اختیاری و فقط متن برای Gateway.
+- `PaymentCreationResult = {provider, providerPaymentId, redirect}`. `redirect = {url, method: GET|POST, fields}`. Provider فقط داده Redirect می‌دهد. Gateway ممکن است POST form بخواهد، پس method و fields جزو مقصد هستند.
+- `ProviderPaymentId` و `ProviderReference`: String مبهم. Authority یا RefId داخل Adapter به آن‌ها map می‌شود. با `BusinessOperationId`، OrderId و PaymentId یکی نیستند.
+- `PaymentCallbackData` = Map ثابت و محدود از String به String (Option A). Domain کلیدها را تفسیر نمی‌کند. Callback received ≠ Payment confirmed. پرداخت فقط بعد از `verifyPayment` موفق و تطبیق مبلغ در Service موفق شمرده می‌شود.
+- `PaymentVerificationResult`: `SUCCESS` (با `verifiedAmount` و `providerReference?`)، `FAILED`، `PENDING`. پاسخ «قبلاً verify شده» (مثل ZarinPal code 101) در Adapter به `SUCCESS` با همان واقعیت‌ها map می‌شود و تکراری‌بودن با Idempotency در Service مدیریت می‌شود. `assertVerifiedAmount` مبلغ تأییدشده و ID را با انتظار مقایسه می‌کند.
+- Errorها: `AppError → FinancialError → PaymentError`: `PAYMENT_PROVIDER_ERROR` (502)، `PAYMENT_PROVIDER_UNAVAILABLE` (503)، `PAYMENT_INVALID_AMOUNT` (400)، `PAYMENT_NOT_FOUND` (404)، `PAYMENT_AMOUNT_MISMATCH` (422). پیام عمومی ثابت است و کد Gateway فقط در `internalDetail` می‌ماند. Codeهای `MELLAT_*` و `ZARINPAL_*` وجود ندارند. `PAYMENT_VERIFICATION_FAILED` و `PAYMENT_ALREADY_VERIFIED` عمداً ساخته نشدند (FAILED یک Result عادی است. تکراری‌بودن مسئله Service است). `toErrorResponse` فعلی Status 5xx را به `INTERNAL_ERROR` عمومی تبدیل می‌کند.
+- Legacy (Evidence، کپی نشد): `MellatPayment::payOrder` مبلغ `order->payment->price` را خام به پکیج می‌داد. `verifyOrder` در Callback موفق Order را confirm می‌کرد و `ref_id` را ذخیره می‌کرد، بدون Idempotency و بدون Atomic State Transition. در Callback ناموفق `status = 0` می‌گذاشت. Provider و Business Logic در یک کلاس بودند. در Shanilo جدید جدا هستند.
+- هنوز OPEN یا Deferred: Credential و URL هر Gateway، Retry Policy، Idempotency Key مخصوص Gateway، Schema و Model پرداخت، Callback Route و Webhook، Refund، Settlement، Payout، مرز Transaction، انتخاب و Config Provider، Inquiry، نام ENV جدید.
+
+## 17. Next Phase
+
+Phase 2F — Payment Service Contract (منتظر دستور کاربر). به 2F خودکار وارد نشو. جزئیات: `docs/scope/open-decisions.md` بخش DR-05 و «Phase 2 Readiness Review». اگر Conflict جدید پیدا شد، قبل از تغییر معماری Decision Review بده.
