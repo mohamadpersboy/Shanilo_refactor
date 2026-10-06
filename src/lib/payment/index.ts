@@ -21,6 +21,12 @@ export {
 } from "./ids";
 export type { PaymentProvider } from "./provider";
 export {
+  createPaymentService,
+  type CreatePaymentInput,
+  type PaymentService,
+  type VerifyPaymentInput,
+} from "./service";
+export {
   MAX_CALLBACK_FIELDS,
   MAX_CALLBACK_KEY_LENGTH,
   MAX_CALLBACK_URL_LENGTH,
