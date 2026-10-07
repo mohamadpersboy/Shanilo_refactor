@@ -58,11 +58,11 @@ Legacy رفتار = آنچه کد می‌کند. هیچ‌کدام از موار
 | BR-20 | ترتیب وضعیت: 2،3،4،5 پشت سر هم. مشتری 3 و 5. فروشنده 2،3،4. | canUpdateStatus | Preserve | همان. | رفتار فعال. |
 | BR-21 | هر Cancel `CreditLog` می‌سازد. | OrderController | Change | هر برگشت وجه یک ورودی دفتر دارد. بدون ورودی بی‌اثر. | B5. |
 | BR-22 | Mellat Verify موفق → `successful`. ناموفق → `unsuccessful` و Order لغو. | MellatPayment | Preserve | همان. | رفتار فعال. |
-| BR-23 | پرداخت Credit: موجودی ≥ مبلغ. | CreditPayment | Unknown | OD-01 DECIDED: B (Credit مشتری وجود دارد). این قاعده تصمیم نشده است (F47–F49). | |
-| BR-24 | شارژ Credit بین 10,000 و 10,000,000. | CreditController | Unknown | OD-01 DECIDED: B (Credit مشتری وجود دارد). این قاعده تصمیم نشده است (F47–F49). | |
+| BR-23 | پرداخت Credit: موجودی ≥ مبلغ. | CreditPayment | Unknown | OD-01 DECIDED: B (Credit مشتری وجود دارد). پرداخت ترکیبی Credit + درگاه نیاز قطعی محصول است (DR-06). قاعده دقیق مبلغ، رزرو و کسر Credit تصمیم نشده و در طراحی Checkout/Payment می‌آید (F47). | |
+| BR-24 | شارژ Credit بین 10,000 و 10,000,000. | CreditController | Unknown | OD-01 DECIDED: B (Credit مشتری وجود دارد). این قاعده تصمیم نشده است (F48). | |
 | BR-25 | `removeable = total - مبلغ ۳ روز اخیر با Order 1..4`. | Wallet | Unknown | OD-03. | مقدار و قاعده نیاز به تأیید. |
 | BR-26 | درخواست برداشت (Payout؛ در Legacy: Checkout): ≥ 10,000 و ≤ `removeable`. یک `pending` برای هر Wallet. | Profile/CheckoutController | Preserve | همان. حداقل مبلغ قابل تأیید در OD-03. | رفتار فعال. |
-| BR-27 | Credit: یک درخواست برداشت فعال برای هر کاربر. | RequestCheckoutCredit | Unknown | OD-01 DECIDED: B (Credit مشتری وجود دارد). این قاعده تصمیم نشده است (F47–F49). | |
+| BR-27 | Credit: یک درخواست برداشت فعال برای هر کاربر. | RequestCheckoutCredit | Unknown | OD-01 DECIDED: B (Credit مشتری وجود دارد). این قاعده تصمیم نشده است (F49). | |
 | BR-28 | نظر: ورود لازم. مالک نظر نمی‌دهد. یک نظر برای هر شیء. | canComment | Preserve | همان. | رفتار فعال. |
 | BR-29 | نظر مستقیم `confirmed`. | CommentController | Unknown | OD-09. | C7. |
 | BR-30 | پاسخ نظر `rate=0`. حذف فقط مالک نظر. | CommentController | Preserve | همان. | |

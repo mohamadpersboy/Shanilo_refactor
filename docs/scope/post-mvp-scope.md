@@ -64,7 +64,7 @@
 |---|---|---|---|---|
 | F35 | Shipping | پرداخت در محل (`pay_types.type=home`) | UNKNOWN | UNKNOWN |
 | F46 | Payment | AsanPardakht | UNKNOWN | UNKNOWN |
-| F47 | Payment | پرداخت با Credit | REDESIGN | OPEN |
+| F47 | Payment | پرداخت با Credit | REDESIGN | (الف) پرداخت ترکیبی Credit + درگاه: DECIDED (نیاز محصول، جایگاه MVP تصمیم نشده). (ب) پرداخت کامل فقط با Credit: OPEN |
 | F53 | Wallet | کمیسیون پلتفرم | REDESIGN | OPEN |
 | F63 | Social | Timeline | UNKNOWN | UNKNOWN |
 | F64 | Social | Comparison (مقایسه) | UNKNOWN | UNKNOWN |

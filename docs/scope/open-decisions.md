@@ -19,7 +19,7 @@
 - **Option:** B
 - **Reason (بیان مالک):** پول مشتری و فروشنده نباید در یک موجودی ادغام شود. معماری نباید افزودن Refund Provider در آینده را خراب کند.
 - **Legacy Evidence:** `users.credit` (Credit مشتری). `Wallet` و `WalletTransaction` (دفتر `add`/`sub` فروشگاه). `Order::disconfirm`: `credit += order.total`. C9، BR-19.
-- **New Shanilo Impact:** F39 به Credit مشتری برمی‌گردد. Domain Credit از Unknown به MVP می‌رود (حساب و دفتر برای دریافت Refund). F47 (پرداخت با Credit)، F48 (شارژ)، F49 (برداشت) تصمیم نشده‌اند و حکم این تصمیم نیستند.
+- **New Shanilo Impact:** F39 به Credit مشتری برمی‌گردد. Domain Credit از Unknown به MVP می‌رود (حساب و دفتر برای دریافت Refund). F47 بخش ب (پرداخت کامل فقط با Credit)، F48 (شارژ)، F49 (برداشت) تصمیم نشده‌اند و حکم این تصمیم نیستند. F47 بخش الف (پرداخت ترکیبی) بعداً در DR-06 تصمیم شد.
 - **Implementation Phase:** طراحی: Phase 2. Schema: Phase 3. Refund و Wallet: Phase 11 و 12.
 
 ### DR-02 — OD-07: Tax
@@ -68,7 +68,7 @@
 | M-09 Seller Wallet | Ledger مستقل. Payment موفق Wallet را مستقیم افزایش نمی‌دهد. |
 | M-10 Seller Settlement | Seller Payable یک Domain Concept مستقل است (Option B). Settlement = انتقال Payable→Wallet. Customer Refund مستقیم Seller Wallet را تغییر نمی‌دهد. Cancel/Refund، Payable را باطل یا اصلاح می‌کند. |
 | M-11 Financial Snapshot | Order تاریخی است. Snapshot: currency، subtotal، discount، tax، shipping، total، paidAmount. هر قلم: unitPrice، discountPercent، finalUnitPrice، quantity، lineTotal. Policy: نرخ Tax و `enabled`، نسخه RoundingPolicy، currency. |
-| M-12 Transaction Boundary | فقط عملیات چندسندی Transaction می‌خواهند: Confirm Payment، Refund، Settlement، Payout. اول Single-Document Atomicity بررسی شود. هیچ HTTP، Gateway یا SMS call داخل Transaction نباشد. مرز نهایی: Phase 3. |
+| M-12 Transaction Boundary | فقط عملیات چندسندی Transaction می‌خواهند: Confirm Payment، Refund، Settlement، Payout. اول Single-Document Atomicity بررسی شود. هیچ HTTP، Gateway یا SMS call داخل Transaction نباشد. مرز نهایی: Phase 3. (به‌روزرسانی DR-06: Phase 3 زیرساخت و قرارداد Transaction را می‌سازد. مرز هر عملیات مالی در فاز همان عملیات تعیین می‌شود.) |
 | M-13 Idempotency | Key از Business Operation ID می‌آید. Unique Constraint + Conditional State Transition. Callback تکراری اثر مالی دوم ندارد. `settlement:{orderId}` فرض نمی‌شود. |
 
 **جریان مالی:** Customer Payment → Order Financials → Seller Payable → Settlement → Seller Wallet.
@@ -87,9 +87,47 @@
 
 **ترتیب اجرا:** 2A Money + Currency → 2B RoundingPolicy → 2C TaxPolicy + PriceCalculation + FinancialSnapshot Types → 2D Financial Errors + Idempotency Types → 2E PaymentProvider Contracts. بعد از هر مرحله توقف و گزارش. Business Feature جدید در 2A تا 2E اضافه نمی‌شود.
 
-**وضعیت اجرا:** 2A تا 2F کامل شد. Phase 2F (Payment Service Contract + pure orchestration) با دستور صریح مالک تعریف شد و تغییر Roadmap اصلی نیست. Persistence، Provider Selection، Order Integration، API/Webhook، Refund/Settlement و Inquiry deferred هستند (`CLAUDE.md` بخش 17). در 2C نرخ Tax (`rateBps`) تعیین نشد و OPEN ماند. Snapshot شامل `refundedAmount` نیست. Settlement و Payable در Phase 12 هستند. جزئیات: `CLAUDE.md` بخش 14. 2D: Financial Errors و Idempotency Types فقط Contract هستند (`CLAUDE.md` بخش 15). Operation ID دقیق Settlement/Payment، Persistence، TTL و Retry Policy همچنان OPEN یا Deferred هستند. همان Operation ID با Payload دیگر = `IDEMPOTENCY_CONFLICT`. همان ID و همان Hash = Replay.
+**وضعیت اجرا:** 2A تا 2F کامل شد. DR-06 (Owner Decisions قبل از Phase 3) ثبت شد. Phase 3 منتظر تأیید Owner است. Phase 2F (Payment Service Contract + pure orchestration) با دستور صریح مالک تعریف شد و تغییر Roadmap اصلی نیست. Persistence، Provider Selection، Order Integration، API/Webhook، Refund/Settlement و Inquiry deferred هستند (`CLAUDE.md` بخش 17). در 2C نرخ Tax (`rateBps`) تعیین نشد و OPEN ماند. Snapshot شامل `refundedAmount` نیست. Settlement و Payable در Phase 12 هستند. جزئیات: `CLAUDE.md` بخش 14. 2D: Financial Errors و Idempotency Types فقط Contract هستند (`CLAUDE.md` بخش 15). Operation ID دقیق Settlement/Payment، Persistence، TTL و Retry Policy همچنان OPEN یا Deferred هستند. همان Operation ID با Payload دیگر = `IDEMPOTENCY_CONFLICT`. همان ID و همان Hash = Replay.
 
 **2E (PaymentProvider Contracts، `CLAUDE.md` بخش 16):** `PaymentProvider` با `createPayment` و `verifyPayment`. Stateهای Domain برای Verification: `SUCCESS | FAILED | PENDING`. Callback ≠ تأیید پرداخت. Money Domain = TOMAN. تبدیل به واحد Gateway فقط داخل Adapter. شناسه‌های مخصوص Gateway (Authority، RefId، SaleOrderId، SaleReferenceId) وارد Domain نمی‌شوند و فقط به `providerPaymentId` و `providerReference` map می‌شوند. Deferred: Refund Provider Contract، Inquiry، Credential و URL، Retry و Idempotency Key مخصوص Gateway، Schema پرداخت، Callback Route و Webhook، Provider Selection و Config.
+
+### DR-06 — Owner Decisions قبل از Phase 3 (2026-10-07)
+
+جزئیات، محدوده Phase 3 و ریسک‌ها: `phase-3-scope-lock.md`.
+
+**DECIDED**
+
+| ID | تصمیم |
+|---|---|
+| DB-01 | Development MongoDB = Atlas. Production MongoDB = MongoDB روی VPS با Ubuntu 24.04. Production برای Transaction چندسندی Replica Set است (تک‌عضوی قابل قبول). `MONGODB_URI` مستقل برای هر محیط. |
+| DB-02 | Production Application = Next.js روی همان VPS با Ubuntu 24.04. Vercel دیگر Production Target نیست. Vercel فقط برای Preview، Development یا استفاده موقت می‌ماند. |
+| DB-03 | MongoDB Data Layer = Mongoose. انتخاب بین Mongoose و Native Driver بسته شد. Phase 3 دوباره آن را مطرح نمی‌کند. |
+| PAY-01 | مدل A: هر Payment = یک تعامل با درگاه. Retry = Payment جدید. بدون `PaymentAttempt`. حداکثر یک `PENDING` برای هر Order (در Repository و Concurrency هم). |
+| PAY-02 | پرداخت ترکیبی Customer Credit + درگاه = DECIDED (نیاز محصول). مثال: Order 1,000,000 = Credit 300,000 + درگاه 700,000 تومان. طراحی دقیق: DEFERRED به Checkout/Payment. |
+| PAY-03 | `Order.currentPaymentId` فعلاً اضافه نمی‌شود. |
+| PAY-05 | بدون TTL خودکار برای Idempotency مالی. حذف سوابق نباید اجرای دوباره را ممکن کند. |
+| PAY-07 | Seller Payable فعلاً خارج از Transaction تأیید Payment. |
+| PAY-08 | `operation_records` در Phase 3 ساخته نشود. همراه اولین Consumer واقعی (Checkout/Payment، Phase 11 یا Phase 12 طبق Roadmap) طراحی و پیاده شود. فاز دقیق در Analysis همان فاز تعیین می‌شود. |
+| U11 | پرداخت دیرهنگام نادیده گرفته نشود و بدون بررسی «موفق» اعلام نشود. رفتار دقیق OPEN. |
+
+**OPEN / DEFERRED**
+
+| موضوع | وضعیت |
+|---|---|
+| نسخه دقیق MongoDB (Production) | OPEN |
+| نام Replica Set | OPEN |
+| Backup، Monitoring، جزئیات Firewall و Authentication روی VPS | OPEN |
+| نوع BSON دقیق برای Money | OPEN (تصمیم با تست در Phase 3) |
+| Seller Payable، Settlement، Wallet | OPEN |
+| پرداخت دیرهنگام (U11): انتقال وضعیت، Reconciliation، رسیدگی دستی | OPEN |
+| آزادسازی یا بازگرداندن Credit بعد از شکست درگاه | OPEN |
+| State Machine دقیق پرداخت ترکیبی | DEFERRED به Checkout/Payment |
+| Credit Reservation / Debit / Release، رفتار Crash، Gateway Pending/Unknown، Refund پرداخت ترکیبی | DEFERRED به Checkout/Payment |
+| مرز دقیق Transaction هر عملیات مالی | DEFERRED به فاز همان عملیات |
+| Retention، Archive و Delete سوابق Idempotency | OPEN |
+| `Order.currentPaymentId` | بازبینی هنگام Order/Payment Integration |
+| F47 بخش ب (پرداخت کامل فقط با Credit)، F48 (شارژ)، F49 (برداشت) | OPEN |
+| جایگاه پرداخت ترکیبی در MVP یا Post-MVP | OPEN |
 
 ### Requirements برای Phase 2 (فقط ثبت، بدون Implementation)
 
@@ -108,14 +146,15 @@ Blockerهای Money که حل شدند: جهت Wallet/Credit (OD-01)، مدل Ta
 | مورد | وضعیت | Blocks Phase 2؟ |
 |---|---|---|
 | BSON Storage Type برای Money (Int32، Long یا گزینه دیگر) | تصمیم در Phase 3 با تست | خیر. |
-| مرز نهایی Transaction هر عملیات مالی | تصمیم در Phase 3 (Schema و Repository) | خیر. |
+| مرز نهایی Transaction هر عملیات مالی | به‌روزرسانی DR-06: مرز هر عملیات مالی در فاز همان عملیات تعیین می‌شود. Phase 3 فقط زیرساخت و قرارداد Transaction را می‌سازد. | خیر. |
 | Operation ID و Idempotency Key برای Settlement | بعد از طراحی Payable مشخص می‌شود. `settlement:{orderId}` فرض نمی‌شود. | خیر. |
 | Settlement Rounding | Phase 12 (وابسته به Commission و Seller Financial Rules) | خیر. |
 | Zero-price After Rounding | Phase 8 (Product Pricing). تا آن زمان رفتار Legacy فقط Evidence است. | خیر. |
 | Commission (OD-02) | باز | خیر. قبل از طراحی Settlement. |
 | Settlement، Hold period و Payout (OD-03) | باز | خیر. قبل از طراحی Payable→Wallet. |
 | COD (OD-12) | باز | خیر. روش پرداخت قابل توسعه باشد. |
-| F47، F48، F49 (پرداخت، شارژ، برداشت با Credit) | تصمیم نشده | خیر. قبل از نهایی شدن انواع Credit Transaction. |
+| F47 بخش الف (پرداخت ترکیبی Credit + درگاه) | DECIDED (DR-06). طراحی دقیق DEFERRED به Checkout/Payment | خیر. |
+| F47 بخش ب (پرداخت کامل فقط با Credit)، F48 (شارژ)، F49 (برداشت) | تصمیم نشده | خیر. قبل از نهایی شدن انواع Credit Transaction. |
 | نرخ Tax و `enabled` | تصمیم نشده. نرخ Legacy فقط 0 تاریخی است. نرخ آینده حدس زده نمی‌شود. | خیر. |
 | واحد Log بانک Mellat (C10) | UNKNOWN. | خیر. Phase 12/15. |
 | واحد ZarinPal | UNVERIFIED. از مستندات رسمی در Phase 12 تأیید شود. | خیر. |

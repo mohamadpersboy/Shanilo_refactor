@@ -17,6 +17,7 @@
 | `security-decisions.md` | تصمیم‌های امنیتی |
 | `legacy-review.md` | بازبینی 16 Contradiction و 38 Unknown |
 | `open-decisions.md` | تصمیم‌های نهایی Phase 1.5 و Phase 2 (DR-01..DR-05)، تصمیم‌های باز، خطاهای مستندات Phase 0، Feature جدید احتمالی، آمادگی Phase 2 |
+| `phase-3-scope-lock.md` | تصمیم‌های Owner قبل از Phase 3 (DB-01، PAY-01..PAY-07، U11)، موارد OPEN، محدوده Phase 3، Transaction، تعارض‌های اسناد |
 
 ## برچسب مبنا
 

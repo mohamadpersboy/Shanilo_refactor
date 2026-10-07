@@ -22,7 +22,7 @@
 | Repository | `mohamadpersboy/Shanilo_refactor` |
 | Repository Legacy (مرجع) | `mohamadpersboy/shanilo` (کد Legacy Laravel 5.5) |
 | Branch | `main` |
-| Current Phase | Phase 2 (Owner Approval M-01..M-13 ثبت شد، `docs/scope/open-decisions.md` DR-05). 2A تا 2F کامل شد. ترتیب: 2A→2B→2C→2D→2E→2F با توقف بعد از هر مرحله. |
+| Current Phase | Phase 2 (Owner Approval M-01..M-13 ثبت شد، `docs/scope/open-decisions.md` DR-05). 2A تا 2F کامل شد. DR-06 و Phase 3 Scope Lock ثبت شد (`docs/scope/phase-3-scope-lock.md`). Production = VPS. Data Layer = Mongoose. Phase 3 منتظر تأیید Owner. ترتیب: 2A→2B→2C→2D→2E→2F با توقف بعد از هر مرحله. |
 | محتوای repository | `CLAUDE.md`، `docs/`، و پایه Next.js (`app/`، `src/lib/`، `tests/`). کد Legacy در این repository نیست. |
 | کد Next.js | پایه: Shell، `/api/health`، لایه ENV، Errors، Logger. Phase 2A: `src/lib/money` (Money، Currency، Integer arithmetic). Phase 2B: `src/lib/money/rounding.ts` (RoundingPolicy). Phase 2C: `tax.ts`، `pricing.ts`، `snapshot.ts` (TaxPolicy، PriceCalculation، FinancialSnapshot). Phase 2D: `financial-errors.ts`، `idempotency.ts`. Phase 2E: `src/lib/payment` (PaymentProvider Contracts). Phase 2F: `src/lib/payment/service.ts` (PaymentService Contract + Pure Orchestration). Feature کسب‌وکار وجود ندارد. |
 | Tests / Build | Scriptها: `lint`, `typecheck`, `test`, `build`. نسخه‌ها: Next 16.3.8، React 19.3.0، TypeScript 6.0.3، ESLint 9.39.5، Vitest 5.0.3. |
@@ -288,6 +288,20 @@ Phase 2F: Payment Service Contract + pure orchestration. این فاز با دس
 - Test: `tests/payment-service.test.ts` با Provider ساختگی (Test-only). `TestPaymentProvider` فاز 2E داخل فایل تست خودش است و Export نمی‌شود، پس Provider ساختگی جداگانه نوشته شد.
 - Deferred / Next Phase: Persistence و Repository، Payment Entity، Attempt، State Machine، Provider Registry و Selection، Order Integration، API و Webhook، Transaction، Retry، Refund، Settlement، Inquiry، Adapterهای Mellat و ZarinPal، Idempotency Key مخصوص Gateway.
 
-## 18. Next Phase
+## 18. Owner Decisions و Phase 3 Scope Lock
 
-بعد از 2F منتظر دستور کاربر. به فاز بعد خودکار وارد نشو. جزئیات: `docs/scope/open-decisions.md` بخش DR-05. اگر Conflict جدید پیدا شد، قبل از تغییر معماری Decision Review بده.
+جزئیات: `docs/scope/phase-3-scope-lock.md`. جدول DECIDED و OPEN: `docs/scope/open-decisions.md` بخش DR-06. فقط تصمیم و مستند. هیچ کدی نوشته نشد.
+
+- Deployment: Production Application = Next.js روی VPS Ubuntu 24.04 (DB-02). Production MongoDB = MongoDB روی همان VPS با Replica Set (تک‌عضوی قابل قبول). Development MongoDB = Atlas (DB-01). Vercel Production Target نیست. فقط Preview یا استفاده موقت. `MONGODB_URI` برای هر محیط مستقل.
+- Data Layer: Mongoose (DB-03). انتخاب Native Driver بسته شد.
+- PAY-01: مدل A. هر Payment = یک تعامل درگاه. Retry = Payment جدید. بدون `PaymentAttempt`. حداکثر یک `PENDING` برای هر Order، در Repository و Concurrency هم.
+- PAY-02: پرداخت ترکیبی Customer Credit + درگاه = DECIDED (نیاز محصول). State Machine، Transaction، Idempotency، Credit Reserve/Debit/Release، Crash، Gateway Pending/Unknown و Refund: DEFERRED به Checkout/Payment. F47 بخش ب، F48 و F49 OPEN.
+- PAY-03: `Order.currentPaymentId` فعلاً نه. PAY-05: بدون TTL برای Idempotency مالی. PAY-07: Seller Payable خارج از Transaction تأیید Payment. U11: پرداخت دیرهنگام نادیده گرفته نشود. رفتار دقیق OPEN.
+- PAY-08: `operation_records` در Phase 3 ساخته نمی‌شود. همراه اولین Consumer واقعی (Checkout/Payment، Phase 11 یا 12 طبق Roadmap).
+- Phase 3 (پیشنهادی، منتظر تأیید): اتصال MongoDB، Mongoose Data Layer، Repository foundation، تصمیم Money در BSON، زیرساخت Transaction، تست واقعی Transaction، مدیریت خطای اتصال، پیش‌نیاز Index و Migration. بدون Payment، Order، Registry، Adapter، API، Reconciliation، Credit، Refund، Payable، Settlement و `operation_records`.
+- OPEN: نسخه دقیق MongoDB، نام Replica Set، Backup، Monitoring، Firewall و Authentication روی VPS، نوع BSON Money، Seller Payable و Settlement، رفتار پرداخت دیرهنگام، سیاست Credit بعد از شکست درگاه، Retention سوابق Idempotency.
+- Project Docs (Master Prompt و Operating Rules) با تصمیم‌های DB-01 تا DB-03 هماهنگ شدند. روش Deploy روی VPS (CI/CD، Process Manager، Reverse Proxy، HTTPS، Rollback) هنوز OPEN است.
+
+## 19. Next Phase
+
+بعد از 2F و Scope Lock منتظر تأیید Owner برای Phase 3. به فاز بعد خودکار وارد نشو. جزئیات: `docs/scope/open-decisions.md` بخش DR-05. اگر Conflict جدید پیدا شد، قبل از تغییر معماری Decision Review بده.

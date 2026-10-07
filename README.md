@@ -1,6 +1,6 @@
 # Shanilo
 
-بازنویسی Shanilo با Next.js 16 (App Router)، React 19، TypeScript، Tailwind CSS 4، MongoDB و Cloudinary. استقرار روی Vercel.
+بازنویسی Shanilo با Next.js 16 (App Router)، React 19، TypeScript، Tailwind CSS 4، MongoDB و Cloudinary. Production: Next.js و MongoDB روی VPS با Ubuntu 24.04. Development MongoDB: Atlas. Vercel Production Target نیست.
 
 وضعیت: Phase 1 (Foundation). فقط پایه پروژه وجود دارد. هیچ Feature کسب‌وکار پیاده نشده.
 
@@ -27,7 +27,7 @@ npm run dev                  # http://localhost:3000
 
 - `.env.example` قرارداد کامل ENV است. فقط Placeholder دارد.
 - `.env.local` را commit نکن. Git آن را نادیده می‌گیرد.
-- روی Vercel همان نام‌ها را در Preview و Production تنظیم کن.
+- Production (VPS): همان نام‌ها را در محیط اجرای Application روی VPS تنظیم کن. Development: `.env.local` با Atlas. اگر Vercel برای Preview یا استفاده موقت به کار رود، همان نام‌ها را فقط آنجا تنظیم کن.
 - Secret فقط سمت server خوانده می‌شود: `src/lib/env/server.ts` (دارای `server-only`).
 - فقط `NEXT_PUBLIC_*` به client می‌رسد: `src/lib/env/public.ts`.
 - هر گروه ENV فقط وقتی لازم است Validate می‌شود. نبودن Provider اختیاری، Build یا Startup را متوقف نمی‌کند.
@@ -56,7 +56,7 @@ tests/               تست‌های پایه
 docs/                مستندات Legacy و Scope
 ```
 
-## Vercel
+## Vercel (فقط Preview یا استفاده موقت. Production Target نیست)
 
 - Framework: Next.js. Build: `npm run build`. Node: 22 یا بالاتر.
 - ENV را در Project Settings ← Environment Variables بگذار.

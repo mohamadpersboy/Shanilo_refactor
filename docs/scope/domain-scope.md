@@ -22,7 +22,7 @@
 | Order | MVP | |
 | Payment | MVP | Mellat. Callback Idempotent |
 | Wallet | MVP | دفتر کل Seller Wallet. Seller Payable مفهوم مستقل قبل از Wallet است. Settlement و Payout: OD-03 |
-| Credit | MVP | حساب و دفتر Credit مشتری برای دریافت Refund (OD-01 DECIDED: B). پرداخت، شارژ و برداشت با Credit تصمیم نشده (F47–F49). |
+| Credit | MVP | حساب و دفتر Credit مشتری برای دریافت Refund (OD-01 DECIDED: B). پرداخت ترکیبی Credit + درگاه نیاز قطعی محصول است (DR-06، F47 بخش الف). پرداخت کامل فقط با Credit (F47 بخش ب)، شارژ (F48) و برداشت (F49) تصمیم نشده است. |
 | Promotion | MVP | Slider و صفحه اصلی. جایگاه پولی Post-MVP (OD-08) |
 | Social | Post-MVP | OD-04 |
 | Comment | Post-MVP | OD-09 |

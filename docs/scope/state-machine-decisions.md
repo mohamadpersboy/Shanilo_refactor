@@ -80,7 +80,7 @@
 | Forbidden | تغییر Succeeded و Failed. Succeeded دوم برای همان Payment. |
 | Terminal | Succeeded، Failed. Expired: UNKNOWN (آیا بانک بعد از انقضا می‌تواند موفق اعلام کند؟ U11، نیاز به بررسی قرارداد بانک). |
 | Refund | در بانک نیست (B6). Refund داخلی یک ورودی Customer Credit است (OD-01 DECIDED: B). MVP: `refundAmount = paidAmount`، فقط لغو کامل (M-08). Seller Wallet را مستقیم تغییر نمی‌دهد. |
-| Credit payment | فوری Succeeded. Credit مشتری وجود دارد (OD-01 B). خود پرداخت با Credit تصمیم نشده (F47). |
+| Credit payment | Legacy: پرداخت کامل با Credit فوراً Succeeded بود (Evidence). Credit مشتری وجود دارد (OD-01 B). **Combined Payment (Credit + درگاه): DECIDED as a product requirement (DR-06، PAY-02). Detailed payment/credit state machine: DEFERRED to Checkout/Payment design.** نیاز محصول قطعی است. State Machine هنوز طراحی نشده. پرداخت کامل فقط با Credit (F47 بخش ب): OPEN. |
 | Basis | EVIDENCE-BASED. Expired: UNKNOWN |
 
 ## 6. Seller Payable / Settlement / Wallet / Payout

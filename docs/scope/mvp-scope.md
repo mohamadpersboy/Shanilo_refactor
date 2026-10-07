@@ -45,4 +45,6 @@ ID: F07، F50، F76، F77، F84، F86، F87، F90.
 
 ## 4. MVP نیست
 
-پیام‌رسانی، Follow/Block، Comment، Favorite، پرداخت/شارژ/برداشت با Credit (F47–F49)، تسویه (OD-03)، جایگاه پولی، CMS، Advertisement، Timeline، Comparison، ارسال پستی، Export.
+> یادداشت (DR-06): پرداخت ترکیبی Credit + درگاه (F47 بخش الف) نیاز قطعی محصول است. جایگاه آن در MVP یا بعد از MVP هنوز تصمیم نشده و در طراحی Checkout/Payment (Phase 11 و 12) مشخص می‌شود.
+
+پیام‌رسانی، Follow/Block، Comment، Favorite، پرداخت کامل فقط با Credit (F47 بخش ب)، شارژ و برداشت Credit (F48–F49)، تسویه (OD-03)، جایگاه پولی، CMS، Advertisement، Timeline، Comparison، ارسال پستی، Export.
