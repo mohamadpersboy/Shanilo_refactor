@@ -38,7 +38,8 @@ npm run dev                  # http://localhost:3000
 |---|---|---|
 | `NEXT_PUBLIC_APP_URL` | خیر | اختیاری |
 | `LOG_LEVEL` | خیر | اختیاری (پیش‌فرض `info`) |
-| `MONGODB_URI` | بله | Phase 3 |
+| `MONGODB_URI` | بله | Phase 3. باید با `mongodb://` یا `mongodb+srv://` شروع شود |
+| `MONGODB_TEST_URI` | بله | فقط Integration Test. برای Build و اجرای عادی لازم نیست. باید با `MONGODB_URI` فرق کند |
 | `CLOUDINARY_CLOUD_NAME` / `_API_KEY` / `_API_SECRET` | بله | Phase 5 |
 | `MELLAT_TERMINAL_ID` / `_USERNAME` / `_PASSWORD` | بله | Phase 12 |
 | `ZARINPAL_MERCHANT_ID` | بله | Phase 12 |

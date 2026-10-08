@@ -14,7 +14,19 @@ export const appSchema = z.object({
   LOG_LEVEL: z.preprocess(emptyToUndefined, z.enum(["debug", "info", "warn", "error"]).default("info")),
 });
 
-export const databaseSchema = z.object({ MONGODB_URI: nonEmpty });
+/** MongoDB connection string. Scheme check only; the value is never echoed in errors. */
+const mongoUri = z
+  .string()
+  .trim()
+  .regex(/^mongodb(\+srv)?:\/\/\S+$/);
+
+export const databaseSchema = z.object({ MONGODB_URI: mongoUri });
+
+/**
+ * Integration tests only. Not part of the app runtime: nothing in `src/` reads it,
+ * and a missing value never affects `next build` or `next start`.
+ */
+export const testDatabaseSchema = z.object({ MONGODB_TEST_URI: mongoUri });
 
 export const cloudinarySchema = z.object({
   CLOUDINARY_CLOUD_NAME: nonEmpty,

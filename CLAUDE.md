@@ -22,10 +22,10 @@
 | Repository | `mohamadpersboy/Shanilo_refactor` |
 | Repository Legacy (مرجع) | `mohamadpersboy/shanilo` (کد Legacy Laravel 5.5) |
 | Branch | `main` |
-| Current Phase | Phase 2 (Owner Approval M-01..M-13 ثبت شد، `docs/scope/open-decisions.md` DR-05). 2A تا 2F کامل شد. DR-06 و Phase 3 Scope Lock ثبت شد (`docs/scope/phase-3-scope-lock.md`). Production = VPS. Data Layer = Mongoose. Phase 3 منتظر تأیید Owner. ترتیب: 2A→2B→2C→2D→2E→2F با توقف بعد از هر مرحله. |
+| Current Phase | Phase 2 (Owner Approval M-01..M-13 ثبت شد، `docs/scope/open-decisions.md` DR-05). 2A تا 2F کامل شد. DR-06 و Phase 3 Scope Lock ثبت شد (`docs/scope/phase-3-scope-lock.md`). Production = VPS. Data Layer = Mongoose. Phase 3 Step 1 (Dependency و ENV تست) انجام شد. Stepهای بعدی Phase 3 منتظر تأیید Owner. ترتیب: 2A→2B→2C→2D→2E→2F با توقف بعد از هر مرحله. |
 | محتوای repository | `CLAUDE.md`، `docs/`، و پایه Next.js (`app/`، `src/lib/`، `tests/`). کد Legacy در این repository نیست. |
 | کد Next.js | پایه: Shell، `/api/health`، لایه ENV، Errors، Logger. Phase 2A: `src/lib/money` (Money، Currency، Integer arithmetic). Phase 2B: `src/lib/money/rounding.ts` (RoundingPolicy). Phase 2C: `tax.ts`، `pricing.ts`، `snapshot.ts` (TaxPolicy، PriceCalculation، FinancialSnapshot). Phase 2D: `financial-errors.ts`، `idempotency.ts`. Phase 2E: `src/lib/payment` (PaymentProvider Contracts). Phase 2F: `src/lib/payment/service.ts` (PaymentService Contract + Pure Orchestration). Feature کسب‌وکار وجود ندارد. |
-| Tests / Build | Scriptها: `lint`, `typecheck`, `test`, `build`. نسخه‌ها: Next 16.3.8، React 19.3.0، TypeScript 6.0.3، ESLint 9.39.5، Vitest 5.0.3. |
+| Tests / Build | Scriptها: `lint`, `typecheck`, `test`, `build`. نسخه‌ها: Next 16.3.8، React 19.3.0، TypeScript 6.0.3، ESLint 9.39.5، Vitest 5.0.3، Mongoose 9.11.1 (pinned). |
 | Open Decisions | 15 مورد: 3 DECIDED (OD-01 B، OD-07 B، OD-11 A)، 12 باز. ZarinPal DECIDED. رکوردها: `docs/scope/open-decisions.md` بخش 0. گزارش قدیمی: `docs/scope/open-decisions-review.md` |
 
 **هشدار امنیتی:** repository Legacy (`mohamadpersboy/shanilo`) در عمل public است و Credential بانک داخل آن است. جزئیات در `docs/scope/open-decisions-review.md` (OD-15). مالک باید Repository را private کند و Credential را Rotate کند.
@@ -147,6 +147,8 @@ READ → UNDERSTAND → INSPECT → PLAN → IMPLEMENT → TEST → UPDATE CLAUD
 - GitHub token را هرگز در کد، `.env`، commit، log یا پاسخ ننویس.
 - `.env` و `.env.local` را commit نکن. فقط `.env.example` با placeholder.
 - مقدارهای مورد انتظار (فقط نام): `MONGODB_URI`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`.
+- `MONGODB_TEST_URI`: ENV مخصوص Integration Test. اختیاری. Build و اجرای عادی به آن نیاز ندارند. جایگزین `MONGODB_URI` نیست. باید با آن فرق کند. Helper: `tests/support/test-env.ts`.
+- `MONGODB_URI` و `MONGODB_TEST_URI` فقط با `mongodb://` یا `mongodb+srv://` معتبر هستند.
 - Secret را در client bundle، log یا پیام خطا نشان نده.
 
 ---
@@ -300,6 +302,7 @@ Phase 2F: Payment Service Contract + pure orchestration. این فاز با دس
 - PAY-08: `operation_records` در Phase 3 ساخته نمی‌شود. همراه اولین Consumer واقعی (Checkout/Payment، Phase 11 یا 12 طبق Roadmap).
 - Phase 3 (پیشنهادی، منتظر تأیید): اتصال MongoDB، Mongoose Data Layer، Repository foundation، تصمیم Money در BSON، زیرساخت Transaction، تست واقعی Transaction، مدیریت خطای اتصال، پیش‌نیاز Index و Migration. بدون Payment، Order، Registry، Adapter، API، Reconciliation، Credit، Refund، Payable، Settlement و `operation_records`.
 - OPEN: نسخه دقیق MongoDB، نام Replica Set، Backup، Monitoring، Firewall و Authentication روی VPS، نوع BSON Money، Seller Payable و Settlement، رفتار پرداخت دیرهنگام، سیاست Credit بعد از شکست درگاه، Retention سوابق Idempotency.
+- Phase 3 Step 1 انجام شد: نصب `mongoose@9.11.1` (exact)، Validation scheme برای `MONGODB_URI`، `MONGODB_TEST_URI` و Helper تست. هنوز Connection، Transaction، Money BSON، Repository و Model وجود ندارد.
 - Project Docs (Master Prompt و Operating Rules) با تصمیم‌های DB-01 تا DB-03 هماهنگ شدند. روش Deploy روی VPS (CI/CD، Process Manager، Reverse Proxy، HTTPS، Rollback) هنوز OPEN است.
 
 ## 19. Next Phase
