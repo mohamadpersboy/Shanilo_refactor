@@ -27,6 +27,25 @@ export class ConfigError extends AppError {
   }
 }
 
+export type DatabaseConnectionFailure = "connect_failed" | "connection_closing" | "disconnect_failed";
+
+/**
+ * MongoDB is unreachable or its connection cannot be used right now.
+ * The message is fixed. It never carries host, port, credentials, URI or driver text.
+ * `driverErrorName` is only the driver's error class name (for example "MongoServerSelectionError").
+ * No `cause` is attached, because a raw driver error can contain the connection string.
+ */
+export class DatabaseConnectionError extends AppError {
+  readonly reason: DatabaseConnectionFailure;
+  readonly driverErrorName?: string;
+
+  constructor(reason: DatabaseConnectionFailure, driverErrorName?: string) {
+    super("DATABASE_CONNECTION_FAILED", "Database is temporarily unavailable", 503);
+    this.reason = reason;
+    if (driverErrorName !== undefined) this.driverErrorName = driverErrorName;
+  }
+}
+
 export class ValidationError extends AppError {
   constructor(message = "Validation failed") {
     super("VALIDATION_FAILED", message, 400);
