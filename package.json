@@ -11,7 +11,9 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.mts",
+    "smoke:health": "node scripts/smoke-health.mjs"
   },
   "dependencies": {
     "mongoose": "9.11.1",
