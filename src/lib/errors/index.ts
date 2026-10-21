@@ -46,6 +46,26 @@ export class DatabaseConnectionError extends AppError {
   }
 }
 
+export type DatabaseTransactionFailure = "unsupported" | "start_failed" | "commit_failed";
+
+/**
+ * A database transaction could not be started, committed, or is not supported by this MongoDB deployment.
+ * The message is fixed. It never carries host, port, credentials, URI or driver text.
+ * `driverErrorName` is only the driver's error class name (for example "MongoServerError").
+ * No `cause` is attached, because a raw driver error can contain the connection string.
+ * Errors thrown by the transaction callback are NOT wrapped in this class. They pass through unchanged.
+ */
+export class DatabaseTransactionError extends AppError {
+  readonly reason: DatabaseTransactionFailure;
+  readonly driverErrorName?: string;
+
+  constructor(reason: DatabaseTransactionFailure, driverErrorName?: string) {
+    super("DATABASE_TRANSACTION_FAILED", "Database transaction could not be completed", 503);
+    this.reason = reason;
+    if (driverErrorName !== undefined) this.driverErrorName = driverErrorName;
+  }
+}
+
 export class ValidationError extends AppError {
   constructor(message = "Validation failed") {
     super("VALIDATION_FAILED", message, 400);

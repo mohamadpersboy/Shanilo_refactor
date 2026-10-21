@@ -1,5 +1,6 @@
 import "server-only";
 import mongoose, { type Connection, type ConnectOptions } from "mongoose";
+import { safeErrorName } from "@/lib/db/error-name";
 import { getDatabaseEnv } from "@/lib/env/server";
 import { DatabaseConnectionError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
@@ -53,12 +54,6 @@ type GlobalWithCache = typeof globalThis & { [CACHE_KEY]?: ConnectionCache };
 function getCache(): ConnectionCache {
   const holder = globalThis as GlobalWithCache;
   return (holder[CACHE_KEY] ??= { promise: null, established: false });
-}
-
-/** Only a plain class name is safe to keep. Anything else could carry host or credentials. */
-function safeErrorName(error: unknown): string {
-  const name = error instanceof Error ? error.name : "";
-  return /^[A-Za-z][A-Za-z0-9]{0,63}$/.test(name) ? name : "UnknownError";
 }
 
 function toConnectionError(error: unknown, reason: "connect_failed" | "disconnect_failed"): DatabaseConnectionError {
