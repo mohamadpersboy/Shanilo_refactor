@@ -15,7 +15,7 @@ if (!existsSync(join(process.cwd(), ".next", "BUILD_ID"))) {
   process.exit(1);
 }
 
-const server = spawn(process.execPath, [nextBin, "start", "-p", port], { stdio: "inherit" });
+const server = spawn(process.execPath, [nextBin, "start", "-H", "127.0.0.1", "-p", port], { stdio: "inherit" });
 let exited = false;
 server.on("exit", () => (exited = true));
 
