@@ -1,6 +1,8 @@
 # Owner Decisions و Phase 3 Scope Lock
 
-تاریخ: 2026-10-07. وضعیت: فقط تصمیم و محدوده. هیچ کدی نوشته نشد. Phase 3 هنوز شروع نشده و منتظر تأیید Owner است.
+تاریخ: 2026-10-07. وضعیت: فقط تصمیم و محدوده. هیچ کدی نوشته نشد.
+
+> **یادداشت وضعیت (2026-11-28).** عبارت «Phase 3 هنوز شروع نشده و منتظر تأیید Owner است» وضعیت تاریخی زمان نگارش این سند بود (2026-10-07). وضعیت فعلی: Phase 3 In Progress. Step 1 (Dependency & Environment Audit)، Step 2 (Connection Layer) و Step 3 (Transaction Helper) Complete. Remaining: Repository Foundation، BSON Money Representation، Index & Migration Foundation. مرجع: `CLAUDE.md` بخش 2. تصمیم‌ها و محدودیت‌های این سند تغییر نکرده‌اند.
 
 این سند فقط تصمیم‌های جدید را ثبت می‌کند. تصمیم‌های قبلی (DR-01..DR-05، M-01..M-13) دوباره تعریف نمی‌شوند. جدول DECIDED و OPEN کامل: `open-decisions.md` بخش DR-06.
 
@@ -79,7 +81,7 @@
 
 ---
 
-## 3. محدوده Phase 3 (نیاز به تأیید Owner برای شروع)
+## 3. محدوده Phase 3 (در زمان نگارش: نیاز به تأیید Owner برای شروع. Owner بعداً تأیید کرد و Phase 3 In Progress است)
 
 Phase 3 فقط زیرساخت مشترک Data Layer است. هیچ قاعده Business برای Payment یا Order نمی‌گذارد.
 
@@ -155,7 +157,7 @@ Phase 3 نباید Schema یا Collection «تصادفی» بسازد (Master Pr
 
 ---
 
-## 8. گام بعدی (برای تأیید Owner)
+## 8. گام بعدی (تاریخی، 2026-10-07. برای وضعیت فعلی `CLAUDE.md` بخش 2 را ببین)
 1. تأیید این سند.
 2. تصمیم درباره Master Prompt و Operating Rules (اصلاح Vercel).
 3. نوشتن Phase 3 Implementation Prompt.

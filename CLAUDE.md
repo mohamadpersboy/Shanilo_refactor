@@ -22,11 +22,34 @@
 | Repository | `mohamadpersboy/Shanilo_refactor` |
 | Repository Legacy (مرجع) | `mohamadpersboy/shanilo` (کد Legacy Laravel 5.5) |
 | Branch | `main` |
-| Current Phase | Phase 2 (Owner Approval M-01..M-13 ثبت شد، `docs/scope/open-decisions.md` DR-05). 2A تا 2F کامل شد. DR-06 و Phase 3 Scope Lock ثبت شد (`docs/scope/phase-3-scope-lock.md`). Production = VPS. Data Layer = Mongoose. Phase 3 Step 1 (Dependency و ENV تست)، Step 2 (Connection Layer) و Step 3 (Transaction Helper؛ تست واقعی توسط مالک PASS شد، 2026-10-27) انجام شد. Stepهای بعدی Phase 3 منتظر تأیید Owner. ترتیب: 2A→2B→2C→2D→2E→2F با توقف بعد از هر مرحله. |
-| محتوای repository | `CLAUDE.md`، `docs/`، و پایه Next.js (`app/`، `src/lib/`، `tests/`). کد Legacy در این repository نیست. |
-| کد Next.js | پایه: Shell، `/api/health`، لایه ENV، Errors، Logger. Phase 2A: `src/lib/money` (Money، Currency، Integer arithmetic). Phase 2B: `src/lib/money/rounding.ts` (RoundingPolicy). Phase 2C: `tax.ts`، `pricing.ts`، `snapshot.ts` (TaxPolicy، PriceCalculation، FinancialSnapshot). Phase 2D: `financial-errors.ts`، `idempotency.ts`. Phase 2E: `src/lib/payment` (PaymentProvider Contracts). Phase 2F: `src/lib/payment/service.ts` (PaymentService Contract + Pure Orchestration). Feature کسب‌وکار وجود ندارد. |
-| Tests / Build | Scriptها: `lint`, `typecheck`, `test`, `build`، و اختیاری `test:integration`، `smoke:health`. نسخه‌ها: Next 16.4.3، React 19.3.0، TypeScript 6.0.3، ESLint 9.39.5، Vitest 5.0.3، Mongoose 9.11.1، Zod 4.6.7 (pinned). |
+| Current Phase | **Phase 3 — MongoDB Data Layer: In Progress.** Phase 0، 0.5، 1 و 2 Complete. Phase 4 به بعد Not Started. جدول کامل و Stepهای Phase 3 در «وضعیت رسمی Phase» پایین همین بخش. Phase بعدی یا Step بعدی Phase 3 فقط با تأیید Owner شروع می‌شود. |
+| محتوای repository | `CLAUDE.md`، `docs/`، `.github/workflows/ci.yml`، و پایه Next.js (`app/`، `src/lib/`، `tests/`، `tests-integration/`، `scripts/`). کد Legacy در این repository نیست. |
+| کد Next.js | پایه: Shell، `/api/health`، لایه ENV، Errors، Logger. Phase 2A: `src/lib/money` (Money، Currency، Integer arithmetic). Phase 2B: `src/lib/money/rounding.ts` (RoundingPolicy). Phase 2C: `tax.ts`، `pricing.ts`، `snapshot.ts` (TaxPolicy، PriceCalculation، FinancialSnapshot). Phase 2D: `financial-errors.ts`، `idempotency.ts`. Phase 2E: `src/lib/payment` (PaymentProvider Contracts). Phase 2F: `src/lib/payment/service.ts` (PaymentService Contract + Pure Orchestration). Phase 3: `src/lib/db` (`connection.ts`، `transaction.ts`، `error-name.ts`). Feature کسب‌وکار وجود ندارد. |
+| Tests / Build | Scriptها: `lint`, `typecheck`, `test`, `build`، و اختیاری `test:integration`، `smoke:health`. نسخه‌ها: مرجع فقط `package.json` است. در 2026-11-28: Next 16.4.6، React 19.3.0، TypeScript 6.0.3، ESLint 9.39.5، Vitest 5.0.3، Mongoose 9.13.1، Zod 4.6.7 (pinned). |
 | Open Decisions | 15 مورد: 3 DECIDED (OD-01 B، OD-07 B، OD-11 A)، 12 باز. ZarinPal DECIDED. رکوردها: `docs/scope/open-decisions.md` بخش 0. گزارش قدیمی: `docs/scope/open-decisions-review.md` |
+| CI | Workflow: `.github/workflows/ci.yml` (Node 22). Trigger: `pull_request` و `push` به `main`، و `workflow_dispatch`. Stepها: `npm ci`، `lint`، `typecheck`، `npm test -- --testTimeout=15000`، `build`. CI این‌ها را اجرا نمی‌کند: `test:integration`، `smoke:health`، `npm audit`. آخرین اجرای `main` در 2026-11-28 (commit `85218a6`، run `46133574335`): success. |
+
+### وضعیت رسمی Phase (مرجع اصلی. سندهای دیگر باید با این جدول هماهنگ باشند)
+
+| Phase | Status |
+|---|---|
+| Phase 0 — Legacy Reverse Engineering | Complete |
+| Phase 0.5 — Scope & Feature Decisions | Complete |
+| Phase 1 — Next.js Foundation | Complete |
+| Phase 2 — Architecture & Domain Model | Complete |
+| Phase 3 — MongoDB Data Layer | In Progress |
+| Phase 4 onward | Not Started |
+
+Phase 3:
+
+| Step | Status |
+|---|---|
+| Step 1 — Dependency & Environment Audit | Complete |
+| Step 2 — MongoDB Connection Layer | Complete |
+| Step 3 — Transaction Helper | Complete |
+| Repository Foundation | Remaining |
+| BSON Money Representation | Remaining |
+| Index & Migration Foundation | Remaining |
 
 **هشدار امنیتی:** repository Legacy (`mohamadpersboy/shanilo`) در عمل public است و Credential بانک داخل آن است. جزئیات در `docs/scope/open-decisions-review.md` (OD-15). مالک باید Repository را private کند و Credential را Rotate کند.
 
@@ -156,7 +179,7 @@ READ → UNDERSTAND → INSPECT → PLAN → IMPLEMENT → TEST → UPDATE CLAUD
 ## 10. مسائل شناخته‌شده
 
 - TypeScript 7 و ESLint 10 با `eslint-config-next@16.3.8` سازگار نیستند (peer: `typescript-eslint` نیاز به TS زیر 6.1 و ESLint حداکثر 9 دارد). به همین دلیل TS 6.0.3 و ESLint 9.39.5 pin شده‌اند. بعد از سازگار شدن `eslint-config-next` دوباره بررسی کن. (این ناسازگاری با `eslint-config-next@16.3.8` بررسی شده بود. با 16.4.3 دوباره بررسی نشده.)
-- `npm audit` (2026-10-27): قبل از اصلاح 3 مورد بود (1 critical در `next` 16.0.0 تا 16.4.0، 1 high در `zod` زیر 4.6.6 و 1 high در `vite` 8.3.0 تا 8.3.2 داخل `vitest`). `next` و `zod` Runtime هستند. اصلاح شد: `next` و `eslint-config-next` روی 16.4.3 و `zod` روی 4.6.7 (exact pin) و `vite` با `npm audit fix` (فقط Lockfile). نتیجه: `npm audit` = 0 vulnerabilities. Lint، Typecheck، 285 تست، Build و Smoke بعد از ارتقا PASS شدند. تأیید مالک (2026-10-27، commit `d08e4da`، `next@16.4.3`، `zod@4.6.7`): `test:integration` بعد از ارتقا روی MongoDB محلی با Replica Set 13 از 13 PASS. هشدار قدیمی `braces` دیگر دیده نمی‌شود.
+- `npm audit` (وضعیت تاریخی 2026-10-27؛ نسخه‌های فعلی در `package.json`): قبل از اصلاح 3 مورد بود (1 critical در `next` 16.0.0 تا 16.4.0، 1 high در `zod` زیر 4.6.6 و 1 high در `vite` 8.3.0 تا 8.3.2 داخل `vitest`). `next` و `zod` Runtime هستند. اصلاح شد: `next` و `eslint-config-next` روی 16.4.3 و `zod` روی 4.6.7 (exact pin) و `vite` با `npm audit fix` (فقط Lockfile). نتیجه: `npm audit` = 0 vulnerabilities. Lint، Typecheck، 285 تست، Build و Smoke بعد از ارتقا PASS شدند. تأیید مالک (2026-10-27، commit `d08e4da`، `next@16.4.3`، `zod@4.6.7`): `test:integration` بعد از ارتقا روی MongoDB محلی با Replica Set 13 از 13 PASS. هشدار قدیمی `braces` دیگر دیده نمی‌شود.
 - ZarinPal: تصمیم نهایی Mellat + ZarinPal (DR-04). F45 = REDESIGN. تعارض حل شد. ENV فقط Config است. هیچ Provider پیاده نشده.
 - نام ENV پیامک `SMSIR_*` است. Master Prompt در مثال `SMS_IR_*` دارد. نام نهایی با تأیید مالک.
 
@@ -178,6 +201,8 @@ READ → UNDERSTAND → INSPECT → PLAN → IMPLEMENT → TEST → UPDATE CLAUD
 - [x] Phase 2C (TaxPolicy، PriceCalculation، FinancialSnapshot). Phase 2C completed. جزئیات در بخش 14.
 - [x] Phase 2B (RoundingPolicy). Phase 2B RoundingPolicy completed. جزئیات در بخش 13. 2F و بعد از آن با تأیید.
 
+- [x] Phase 2 کامل (2A تا 2F).
+- [ ] Phase 3 In Progress: Step 1 تا 3 Complete. Remaining: Repository Foundation، BSON Money Representation، Index & Migration Foundation.
 - [x] Phase 0: Legacy Reverse Engineering (`docs/legacy/`، 25 سند).
 - [x] Phase 0.5: Scope & Feature Decisions (`docs/scope/`، 12 سند).
 - [x] تصمیم `pbmedia/laravel-ffmpeg`: REMOVE (کد مرده). منتظر تأیید کاربر (OD-14).
@@ -300,9 +325,9 @@ Phase 2F: Payment Service Contract + pure orchestration. این فاز با دس
 - PAY-02: پرداخت ترکیبی Customer Credit + درگاه = DECIDED (نیاز محصول). State Machine، Transaction، Idempotency، Credit Reserve/Debit/Release، Crash، Gateway Pending/Unknown و Refund: DEFERRED به Checkout/Payment. F47 بخش ب، F48 و F49 OPEN.
 - PAY-03: `Order.currentPaymentId` فعلاً نه. PAY-05: بدون TTL برای Idempotency مالی. PAY-07: Seller Payable خارج از Transaction تأیید Payment. U11: پرداخت دیرهنگام نادیده گرفته نشود. رفتار دقیق OPEN.
 - PAY-08: `operation_records` در Phase 3 ساخته نمی‌شود. همراه اولین Consumer واقعی (Checkout/Payment، Phase 11 یا 12 طبق Roadmap).
-- Phase 3 (پیشنهادی، منتظر تأیید): اتصال MongoDB، Mongoose Data Layer، Repository foundation، تصمیم Money در BSON، زیرساخت Transaction، تست واقعی Transaction، مدیریت خطای اتصال، پیش‌نیاز Index و Migration. بدون Payment، Order، Registry، Adapter، API، Reconciliation، Credit، Refund، Payable، Settlement و `operation_records`.
+- Phase 3 (محدوده پیشنهادی در زمان Scope Lock، 2026-10-07. Owner بعداً تأیید و شروع کرد. وضعیت فعلی: بخش 2): اتصال MongoDB، Mongoose Data Layer، Repository foundation، تصمیم Money در BSON، زیرساخت Transaction، تست واقعی Transaction، مدیریت خطای اتصال، پیش‌نیاز Index و Migration. بدون Payment، Order، Registry، Adapter، API، Reconciliation، Credit، Refund، Payable، Settlement و `operation_records`.
 - OPEN: نسخه دقیق MongoDB، نام Replica Set، Backup، Monitoring، Firewall و Authentication روی VPS، نوع BSON Money، Seller Payable و Settlement، رفتار پرداخت دیرهنگام، سیاست Credit بعد از شکست درگاه، Retention سوابق Idempotency.
-- Phase 3 Step 1 انجام شد: نصب `mongoose@9.11.1` (exact)، Validation scheme برای `MONGODB_URI`، `MONGODB_TEST_URI` و Helper تست. هنوز Connection، Transaction، Money BSON، Repository و Model وجود ندارد.
+- Phase 3 Step 1 انجام شد: نصب Mongoose (نسخه وقت Step 1: `9.11.1`، exact. نسخه فعلی: `package.json`)، Validation scheme برای `MONGODB_URI`، `MONGODB_TEST_URI` و Helper تست. هنوز Connection، Transaction، Money BSON، Repository و Model وجود ندارد.
 - Phase 3 Step 2 انجام شد: `src/lib/db/connection.ts` (`server-only`). API: `connectToDatabase()` و `disconnectDatabase()` (فقط تست و lifecycle کنترل‌شده). فقط `MONGODB_URI` را می‌خواند. Lazy است: import اتصال نمی‌سازد. Promise اتصال روی `globalThis` Cache می‌شود. Promise ردشده Cache نمی‌ماند. تنظیمات: `bufferCommands: false`، `autoIndex: false`، `autoCreate: false`، `maxPoolSize: 10`، `serverSelectionTimeoutMS: 5000`. Reconnect بعد از قطع شبکه با خود Driver است. خطا: `DatabaseConnectionError` (`src/lib/errors`، Code `DATABASE_CONNECTION_FAILED`، پیام ثابت، بدون URI، Host یا متن Driver). Signal Handler وجود ندارد. تست: `tests/db-connection.test.ts` (Mock، بدون MongoDB واقعی).
 - Verification Tests (با دستور صریح مالک اضافه شد، 2026-10-17): تست واقعی روی MongoDB و Smoke test. Phase 3 Step جدید یا تغییر معماری نیست. Scriptها: `npm run test:integration` و `npm run smoke:health`. `npm test` عادی آن‌ها را اجرا نمی‌کند.
   - `tests-integration/db.integration.test.ts` با `vitest.integration.config.mts`: اتصال و ping، یک Connection مشترک، Replica Set، Commit و Rollback واقعی Transaction، خطای امن اتصال و اتصال دوباره. فقط `MONGODB_TEST_URI` را می‌خواند. اگر برابر `MONGODB_URI` باشد اجرا نمی‌شود. اگر نام Database کلمه `test` نداشته باشد قبل از نوشتن متوقف می‌شود. فقط یک Collection موقت `__shanilo_it_*` می‌سازد و فقط همان را حذف می‌کند.
@@ -317,4 +342,4 @@ Phase 2F: Payment Service Contract + pure orchestration. این فاز با دس
 
 ## 19. Next Phase
 
-بعد از 2F و Scope Lock منتظر تأیید Owner برای Phase 3. به فاز بعد خودکار وارد نشو. جزئیات: `docs/scope/open-decisions.md` بخش DR-05. اگر Conflict جدید پیدا شد، قبل از تغییر معماری Decision Review بده.
+Phase 3 In Progress (بخش 2). Remaining: Repository Foundation، BSON Money Representation، Index & Migration Foundation. هر Step فقط با تأیید Owner شروع می‌شود. Phase 4 شروع نشده. به Phase بعدی خودکار وارد نشو. جزئیات Step 1 تا 3: بخش 18. محدوده: `docs/scope/phase-3-scope-lock.md`. اگر Conflict جدید پیدا شد، قبل از تغییر معماری Decision Review بده.

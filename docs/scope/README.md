@@ -1,5 +1,7 @@
 # Phase 0.5 — Scope & Feature Decisions
 
+> وضعیت فعلی پروژه (Phase 3 In Progress) در `CLAUDE.md` بخش 2 است. این پوشه تصمیم‌های Scope است و عبارت‌های زمانی آن (مثل «هیچ کد تغییر نکرده») وضعیت زمان نگارش Phase 0.5 هستند.
+
 این پوشه WHAT را تعیین می‌کند. HOW (معماری، Schema، Technology) در Phase 2 به بعد است. هیچ کد تغییر نکرده. `docs/legacy` تغییر نکرده.
 
 ## فهرست سندها

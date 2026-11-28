@@ -2,13 +2,13 @@
 
 بازنویسی Shanilo با Next.js 16 (App Router)، React 19، TypeScript، Tailwind CSS 4، MongoDB و Cloudinary. Production: Next.js و MongoDB روی VPS با Ubuntu 24.04. Development MongoDB: Atlas. Vercel Production Target نیست.
 
-وضعیت: Phase 1 (Foundation). فقط پایه پروژه وجود دارد. هیچ Feature کسب‌وکار پیاده نشده.
+وضعیت: Phase 3 (MongoDB Data Layer) In Progress. Phase 0، 0.5، 1 و 2 Complete. Feature کسب‌وکار پیاده نشده است. مرجع وضعیت رسمی Phase، Stepها و CI: `CLAUDE.md` بخش 2. نسخه‌ها: `package.json`.
 
 ## اجرای محلی
 
 ```bash
 npm install
-cp .env.example .env.local   # در Phase 1 هیچ مقداری لازم نیست
+cp .env.example .env.local   # برای dev و build مقدار اجباری نیست. اتصال دیتابیس به MONGODB_URI نیاز دارد
 npm run dev                  # http://localhost:3000
 ```
 
@@ -22,6 +22,8 @@ npm run dev                  # http://localhost:3000
 | `npm run typecheck` | `next typegen` و `tsc --noEmit` |
 | `npm test` | Vitest |
 | `npm run build` | Build تولید |
+| `npm run test:integration` | تست واقعی MongoDB. فقط `MONGODB_TEST_URI` (Replica Set آزمایشی). در `npm test` و CI نیست |
+| `npm run smoke:health` | Smoke test بعد از `npm run build`. در CI نیست |
 
 ## ENV
 
@@ -53,7 +55,12 @@ app/                 Route، Layout، Error page، /api/health
 src/lib/env/         Validation ENV (schema، server، public)
 src/lib/errors/      خطاهای نوع‌دار
 src/lib/logger/      Logger ساخت‌یافته و Redaction
-tests/               تست‌های پایه
+src/lib/money/       Money، Rounding، Tax، Pricing، Snapshot، Financial Errors، Idempotency (Contract)
+src/lib/payment/     PaymentProvider و PaymentService (Contract)
+src/lib/db/          اتصال MongoDB (Mongoose) و Transaction Helper
+tests/               تست‌های Unit
+tests-integration/   تست واقعی MongoDB
+scripts/             Smoke test
 docs/                مستندات Legacy و Scope
 ```
 
@@ -61,7 +68,7 @@ docs/                مستندات Legacy و Scope
 
 - Framework: Next.js. Build: `npm run build`. Node: 22 یا بالاتر.
 - ENV را در Project Settings ← Environment Variables بگذار.
-- Phase 1 هیچ ENV اجباری ندارد. Deploy بدون ENV باید Build شود.
+- Build و `/api/health` ENV اجباری ندارند. Deploy بدون ENV باید Build شود. `MONGODB_URI` فقط وقتی لازم است که کد اتصال دیتابیس اجرا شود.
 
 ## Health
 
