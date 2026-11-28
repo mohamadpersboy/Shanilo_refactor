@@ -315,6 +315,10 @@ Phase 2F: Payment Service Contract + pure orchestration. این فاز با دس
 - تصمیم Owner (Connection): پروژه از Default Mongoose Connection استفاده می‌کند: `mongoose.connect()` و `mongoose.connection`. فعلاً `createConnection()` استفاده نمی‌شود.
 - Project Docs (Master Prompt و Operating Rules) با تصمیم‌های DB-01 تا DB-03 هماهنگ شدند. روش Deploy روی VPS (CI/CD، Process Manager، Reverse Proxy، HTTPS، Rollback) هنوز OPEN است.
 
+## 18.5 Security Audit (Production Readiness)
+
+Branch `security/production-readiness`. جزئیات: `docs/scope/security-audit.md`. این repo فقط پایه Next.js است و بیشتر S1..S29 مربوط به Legacy یا فازهای بعدی‌اند. اضافه شد: Header امنیتی در `next.config.ts`، Redaction برای Token در متن، `tests/security-guard.test.ts` (فهرست Route بررسی‌شده، ممنوعیت الگوهای خطرناک، بررسی `.env.example`). هر Route Handler جدید باید در `REVIEWED_ROUTES` آن تست ثبت شود.
+
 ## 19. Next Phase
 
 بعد از 2F و Scope Lock منتظر تأیید Owner برای Phase 3. به فاز بعد خودکار وارد نشو. جزئیات: `docs/scope/open-decisions.md` بخش DR-05. اگر Conflict جدید پیدا شد، قبل از تغییر معماری Decision Review بده.
