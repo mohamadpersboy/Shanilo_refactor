@@ -100,16 +100,15 @@ describe("secret hygiene (S1, S2)", () => {
 });
 
 describe("security headers (S26)", () => {
-  it("sends baseline headers in every environment", () => {
-    const keys = securityHeaders(false).map((h) => h.key);
+  it("sends the baseline headers", () => {
+    const keys = securityHeaders().map((h) => h.key);
     expect(keys).toEqual(
       expect.arrayContaining(["X-Content-Type-Options", "X-Frame-Options", "Referrer-Policy", "Permissions-Policy"]),
     );
-    expect(keys).not.toContain("Strict-Transport-Security");
   });
 
-  it("adds HSTS only in production", () => {
-    const hsts = securityHeaders(true).find((h) => h.key === "Strict-Transport-Security");
-    expect(hsts?.value).toMatch(/max-age=\d{7,}/);
+  it("does not send HSTS from the app (decision: enable later in the production Reverse Proxy)", () => {
+    const keys = securityHeaders().map((h) => h.key.toLowerCase());
+    expect(keys).not.toContain("strict-transport-security");
   });
 });
